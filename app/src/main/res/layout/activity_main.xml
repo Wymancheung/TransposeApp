@@ -6,6 +6,10 @@
     android:layout_height="match_parent"
     tools:context="com.comp4521gp01.transposeapp.MainActivity">
 
+    <include
+        android:id="@+id/include"
+        layout="@layout/content_main" />
+
     <android.support.design.widget.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -20,7 +24,13 @@
 
     </android.support.design.widget.AppBarLayout>
 
-    <include layout="@layout/content_main" />
+    <TextView
+        android:id="@+id/fab_blur"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:background="@android:drawable/screen_background_dark_transparent"
+        android:visibility="invisible" />
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/camera_fab"
@@ -34,6 +44,19 @@
         app:pressedTranslationZ="12dp"
         app:srcCompat="@android:drawable/ic_menu_camera" />
 
+    <TextView
+        android:id="@+id/camera_fab_label"
+        android:layout_width="110dp"
+        android:layout_height="30dp"
+        android:layout_gravity="bottom|end"
+        android:layout_marginBottom="244dp"
+        android:layout_marginRight="80dp"
+        android:background="@drawable/rounded_edge"
+        android:gravity="center"
+        android:text="@string/camera_fab"
+        android:textAppearance="@style/TextAppearance.AppCompat"
+        android:visibility="invisible" />
+
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/web_fab"
         android:layout_width="wrap_content"
@@ -44,7 +67,20 @@
         android:visibility="invisible"
         app:elevation="6dp"
         app:pressedTranslationZ="12dp"
-        app:srcCompat="@android:drawable/ic_menu_mapmode" />
+        app:srcCompat="@android:drawable/ic_menu_search" />
+
+    <TextView
+        android:id="@+id/web_fab_label"
+        android:layout_width="90dp"
+        android:layout_height="30dp"
+        android:layout_gravity="bottom|end"
+        android:layout_marginBottom="174dp"
+        android:layout_marginRight="80dp"
+        android:background="@drawable/rounded_edge"
+        android:gravity="center"
+        android:text="@string/web_fab"
+        android:textAppearance="@style/TextAppearance.AppCompat"
+        android:visibility="invisible" />
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/gallery_fab"
@@ -58,6 +94,19 @@
         app:pressedTranslationZ="12dp"
         app:srcCompat="@android:drawable/ic_menu_gallery" />
 
+    <TextView
+        android:id="@+id/gallery_fab_label"
+        android:layout_width="110dp"
+        android:layout_height="30dp"
+        android:layout_gravity="bottom|end"
+        android:layout_marginBottom="104dp"
+        android:layout_marginRight="80dp"
+        android:background="@drawable/rounded_edge"
+        android:gravity="center"
+        android:text="@string/gallery_fab"
+        android:textAppearance="@style/TextAppearance.AppCompat"
+        android:visibility="invisible" />
+
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab"
         android:layout_width="wrap_content"
@@ -69,5 +118,18 @@
         app:elevation="6dp"
         app:pressedTranslationZ="12dp"
         app:srcCompat="@android:drawable/ic_menu_close_clear_cancel" />
+
+    <TextView
+        android:id="@+id/fab_label"
+        android:layout_width="90dp"
+        android:layout_height="30dp"
+        android:layout_gravity="bottom|end"
+        android:layout_marginBottom="30dp"
+        android:layout_marginRight="80dp"
+        android:background="@drawable/rounded_edge"
+        android:gravity="center"
+        android:text="@string/fab"
+        android:textAppearance="@style/TextAppearance.AppCompat"
+        android:visibility="invisible" />
 
 </android.support.design.widget.CoordinatorLayout>

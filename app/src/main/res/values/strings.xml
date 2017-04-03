@@ -1,4 +1,8 @@
 <resources>
     <string name="app_name">Transpose App</string>
     <string name="action_settings">Settings</string>
+    <string name="fab">New Image</string>
+    <string name="camera_fab">From Camera</string>
+    <string name="web_fab">From Web</string>
+    <string name="gallery_fab">From Gallery</string>
 </resources>
