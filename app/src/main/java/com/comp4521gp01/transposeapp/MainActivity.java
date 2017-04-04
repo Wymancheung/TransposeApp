@@ -80,6 +80,11 @@ public class MainActivity extends AppCompatActivity {
                 case R.id.web_fab:
 
                     debug.setText("Web");
+
+                    Intent myIntent = new Intent(MainActivity.this, WebActivity.class);
+                    myIntent.putExtra("key",0); //Optional parameters
+                    MainActivity.this.startActivity(myIntent);
+
                     break;
                 case R.id.gallery_fab:
 
