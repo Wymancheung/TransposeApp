@@ -5,7 +5,7 @@ android {
     buildToolsVersion "25.0.2"
     defaultConfig {
         applicationId "com.comp4521gp01.transposeapp"
-        minSdkVersion 15
+        minSdkVersion 13
         targetSdkVersion 25
         versionCode 1
         versionName "1.0"

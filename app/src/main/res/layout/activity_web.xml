@@ -7,30 +7,24 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="100dp"
+        android:layout_weight="1"
         android:orientation="horizontal">
 
         <ImageButton
-            android:id="@+id/page_previous"
-            android:layout_width="110dp"
-            android:layout_height="40dp"
+            android:id="@+id/leave_web"
+            android:layout_width="80dp"
+            android:layout_height="match_parent"
             android:layout_weight="1"
-            android:rotation="90"
-            app:srcCompat="@android:drawable/arrow_down_float" />
-
-        <ImageButton
-            android:id="@+id/page_forward"
-            android:layout_width="110dp"
-            android:layout_height="40dp"
-            android:layout_weight="1"
-            android:rotation="90"
-            app:srcCompat="@android:drawable/arrow_up_float" />
+            android:background="@drawable/rounded_edge"
+            android:src="?attr/actionModeCloseDrawable" />
 
         <EditText
             android:id="@+id/edittext_url"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_weight="1"
+            android:background="@drawable/rounded_edge"
             android:ems="10"
             android:foregroundGravity="bottom"
             android:inputType="textPersonName"
@@ -38,24 +32,70 @@
             android:textAppearance="@android:style/TextAppearance.Widget.EditText" />
 
         <ImageButton
-            android:id="@+id/go_url"
-            android:layout_width="120dp"
-            android:layout_height="40dp"
-            android:layout_gravity="right"
+            android:id="@+id/del_url"
+            android:layout_width="80dp"
+            android:layout_height="match_parent"
             android:layout_weight="1"
             android:background="@drawable/rounded_edge"
-            android:rotation="180"
-            app:srcCompat="?android:attr/actionModeCloseDrawable" />
+            android:scaleType="fitCenter"
+            android:src="@drawable/remove" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="20dp"
+        android:orientation="horizontal">
 
         <ImageButton
-            android:id="@+id/imageButton4"
+            android:id="@+id/page_previous"
+            android:layout_width="110dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@drawable/rounded_edge"
+            android:elevation="0dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/left_dis" />
+
+        <ImageButton
+            android:id="@+id/page_forward"
+            android:layout_width="110dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@drawable/rounded_edge"
+            android:scaleType="fitCenter"
+            android:src="@drawable/right_dis" />
+
+        <ImageButton
+            android:id="@+id/refresh_url"
             android:layout_width="120dp"
-            android:layout_height="40dp"
+            android:layout_height="match_parent"
             android:layout_gravity="right"
             android:layout_weight="1"
             android:background="@drawable/rounded_edge"
             android:rotation="180"
-            app:srcCompat="?android:attr/actionModeCutDrawable" />
+            android:scaleType="fitCenter"
+            android:src="@drawable/sync" />
+
+        <ImageButton
+            android:id="@+id/go_url"
+            android:layout_width="110dp"
+            android:layout_height="match_parent"
+            android:layout_gravity="right"
+            android:layout_weight="1"
+            android:background="@drawable/rounded_edge"
+            android:scaleType="fitCenter"
+            android:src="@drawable/search" />
+
+        <ImageButton
+            android:id="@+id/crop_web"
+            android:layout_width="120dp"
+            android:layout_height="match_parent"
+            android:layout_gravity="right"
+            android:layout_weight="1"
+            android:background="@drawable/rounded_edge"
+            android:scaleType="fitCenter"
+            android:src="@drawable/done" />
 
     </LinearLayout>
 

@@ -1,7 +1,6 @@
 package com.comp4521gp01.transposeapp;
 
 import android.app.AlertDialog;
-import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
@@ -19,7 +18,6 @@ import android.view.MenuItem;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity {
@@ -27,10 +25,8 @@ public class MainActivity extends AppCompatActivity {
     private Boolean isFabOpen = false;
     private FloatingActionButton fab,camera_fab,web_fab,gallery_fab;
     private TextView fab_label,camera_fab_label,web_fab_label,gallery_fab_label,debug,fab_blur;
-    private Animation fab_open,fab_close,rotate_forward,rotate_backward;
-    private Dialog dialog;
-    private ImageView imageView;
-    String imgDecodableString;
+    private Animation fab_blur_open, fab_blur_close,fab_open,fab_close,rotate_forward,rotate_backward;
+    private String imgDecodableString;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,6 +38,8 @@ public class MainActivity extends AppCompatActivity {
         camera_fab = (FloatingActionButton)findViewById(R.id.camera_fab);
         web_fab = (FloatingActionButton)findViewById(R.id.web_fab);
         gallery_fab = (FloatingActionButton)findViewById(R.id.gallery_fab);
+        fab_blur_open = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fab_blur_open);
+        fab_blur_close = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fab_blur_close);
         fab_open = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fab_open);
         fab_close = AnimationUtils.loadAnimation(getApplicationContext(),R.anim.fab_close);
         rotate_forward = AnimationUtils.loadAnimation(getApplicationContext(),R.anim.rotate_forward);
@@ -76,14 +74,15 @@ public class MainActivity extends AppCompatActivity {
                 case R.id.camera_fab:
 
                     debug.setText("Camera");
+
                     break;
                 case R.id.web_fab:
 
                     debug.setText("Web");
 
-                    Intent myIntent = new Intent(MainActivity.this, WebActivity.class);
-                    myIntent.putExtra("key",0); //Optional parameters
-                    MainActivity.this.startActivity(myIntent);
+                    Intent webIntent = new Intent(MainActivity.this, WebActivity.class);
+                    //MainActivity.this.startActivity(webIntent);
+                    startActivityForResult(webIntent, 0);
 
                     break;
                 case R.id.gallery_fab:
@@ -100,7 +99,9 @@ public class MainActivity extends AppCompatActivity {
                     animateFAB();
                     break;
                 case R.id.button:
+
                     debug.setText("button");
+
                     break;
             }
         }
@@ -133,8 +134,10 @@ public class MainActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         try {
             // When an Image is picked
-            if (requestCode == 1 && resultCode == RESULT_OK
-                    && null != data) {
+            if (requestCode == 0 && resultCode == RESULT_OK && null != data) {
+
+            } else if(requestCode == 1 && resultCode == RESULT_OK && null != data){
+
                 // Get the Image from data
                 Uri selectedImage = data.getData();
                 String[] filePathColumn = {MediaStore.Images.Media.DATA};
@@ -155,7 +158,7 @@ public class MainActivity extends AppCompatActivity {
                 //        .decodeFile(imgDecodableString));
 
             } else {
-                debug.setText("You haven't picked Image");
+                debug.setText(requestCode + ", But wrong");
             }
         } catch (Exception e) {
             debug.setText("Something went wrong");
@@ -166,13 +169,14 @@ public class MainActivity extends AppCompatActivity {
     public void animateFAB(){
 
         if(isFabOpen){
-            fab_blur.setVisibility(View.INVISIBLE);
 
+            fab_blur.startAnimation(fab_blur_close);
             fab.startAnimation(rotate_backward);
             camera_fab.startAnimation(fab_close);
             web_fab.startAnimation(fab_close);
             gallery_fab.startAnimation(fab_close);
 
+            fab_blur.setVisibility(View.INVISIBLE);
             fab_label.setVisibility(View.INVISIBLE);
             camera_fab_label.setVisibility(View.INVISIBLE);
             web_fab_label.setVisibility(View.INVISIBLE);
@@ -183,16 +187,14 @@ public class MainActivity extends AppCompatActivity {
             gallery_fab.setClickable(false);
             fab_blur.setClickable(false);
             isFabOpen = false;
-            Log.d("Raj", "close");
-            //dialog.dismiss();
-
         } else {
-            fab_blur.setVisibility(View.VISIBLE);
+            fab_blur.startAnimation(fab_blur_open);
             fab.startAnimation(rotate_forward);
             camera_fab.startAnimation(fab_open);
             web_fab.startAnimation(fab_open);
             gallery_fab.startAnimation(fab_open);
 
+            fab_blur.setVisibility(View.VISIBLE);
             fab_label.setVisibility(View.VISIBLE);
             camera_fab_label.setVisibility(View.VISIBLE);
             web_fab_label.setVisibility(View.VISIBLE);
@@ -203,9 +205,6 @@ public class MainActivity extends AppCompatActivity {
             gallery_fab.setClickable(true);
             fab_blur.setClickable(true);
             isFabOpen = true;
-            Log.d("Raj","open");
-            //dialog.show();
-
         }
     }
 
@@ -225,6 +224,8 @@ public class MainActivity extends AppCompatActivity {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            return true;
+        }else if (id == R.id.action_faq){
             return true;
         }
 

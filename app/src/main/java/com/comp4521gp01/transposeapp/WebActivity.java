@@ -6,10 +6,13 @@ import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.View;
+import android.webkit.WebChromeClient;
+import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 /**
@@ -19,7 +22,7 @@ import android.widget.TextView;
 public class WebActivity extends Activity{
     private WebView webView;
     private EditText editTextURL;
-    private ImageButton page_previous, page_forward, go_url, refresh_url, crop_web, del_url;
+    private ImageButton leave_web,page_previous, page_forward, go_url, refresh_url, crop_web, del_url;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -27,6 +30,7 @@ public class WebActivity extends Activity{
         Intent intent = getIntent();
 
         editTextURL =  (EditText) findViewById(R.id.edittext_url);
+        leave_web = (ImageButton) findViewById(R.id.leave_web);
         page_previous = (ImageButton) findViewById(R.id.page_previous);
         page_forward = (ImageButton) findViewById(R.id.page_forward);
         go_url = (ImageButton) findViewById(R.id.go_url);
@@ -35,6 +39,10 @@ public class WebActivity extends Activity{
         del_url = (ImageButton) findViewById(R.id.del_url);
         webView = (WebView) findViewById(R.id.webview);
         webView.getSettings().setJavaScriptEnabled(true);
+        WebSettings webSettings = webView.getSettings();
+        //webSettings.setSupportZoom(true);
+        webSettings.setBuiltInZoomControls(true);
+        webSettings.setDisplayZoomControls(false);
         webView.requestFocus();
         webView.setWebViewClient(new WebViewClient());
         webView.loadUrl("https://www.google.com.hk");
@@ -46,14 +54,14 @@ public class WebActivity extends Activity{
                 return false;
             }
         });
-
+        leave_web.setOnClickListener(clickListener);
         page_previous.setOnClickListener(clickListener);
         page_forward.setOnClickListener(clickListener);
         go_url.setOnClickListener(clickListener);
         refresh_url.setOnClickListener(clickListener);
         crop_web.setOnClickListener(clickListener);
         del_url.setOnClickListener(clickListener);
-        
+
     }
 
     private View.OnClickListener clickListener= new View.OnClickListener() {
@@ -61,6 +69,12 @@ public class WebActivity extends Activity{
         public void onClick(View v) {
             int id = v.getId();
             switch (id) {
+                case R.id.leave_web:
+                    Intent intent = new Intent();
+                    intent.putExtra("Back", 0);
+                    setResult(RESULT_OK, intent);
+                    finish();
+                    break;
                 case R.id.page_previous:
                     webView.goBack();
                     break;
@@ -86,7 +100,7 @@ public class WebActivity extends Activity{
         }
     };
 
-    public void GoURL(){
+    private void GoURL(){
         if(editTextURL.getText().toString().startsWith("https://")){
             webView.loadUrl(editTextURL.getText().toString());
         }else if(editTextURL.getText().toString().startsWith("www.")){
@@ -96,7 +110,7 @@ public class WebActivity extends Activity{
         }
     }
 
-    public class WebViewClient extends android.webkit.WebViewClient{
+    private class WebViewClient extends android.webkit.WebViewClient{
         public void onPageStarted(WebView view, String url, Bitmap favicon) {
             super.onPageStarted(view, url, favicon);
             editTextURL.setText(webView.getUrl());
@@ -113,7 +127,7 @@ public class WebActivity extends Activity{
 
     }
 
-    public void ChangePages(){
+    private void ChangePages(){
         if(webView.canGoBack()){
             page_previous.setImageDrawable(getResources().getDrawable(R.drawable.left));
         }else{
@@ -126,6 +140,17 @@ public class WebActivity extends Activity{
             page_forward.setImageDrawable(getResources().getDrawable(R.drawable.right_dis));
         }
 
+    }
+    @Override
+    public void onBackPressed() {
+        if(webView.canGoBack()){
+            webView.goBack();
+        }else {
+            Intent intent = new Intent();
+            intent.putExtra("Back", 0);
+            setResult(RESULT_OK, intent);
+            finish();
+        }
     }
 
 }
