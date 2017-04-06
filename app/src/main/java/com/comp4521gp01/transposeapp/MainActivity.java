@@ -74,6 +74,10 @@ public class MainActivity extends AppCompatActivity {
                 case R.id.camera_fab:
 
                     debug.setText("Camera");
+                    Intent cameraIntent = new Intent(MainActivity.this, TransposeActivity.class);
+
+                    //MainActivity.this.startActivity(cameraIntent);
+                    startActivityForResult(cameraIntent,0);
 
                     break;
                 case R.id.web_fab:
@@ -82,17 +86,16 @@ public class MainActivity extends AppCompatActivity {
 
                     Intent webIntent = new Intent(MainActivity.this, WebActivity.class);
                     //MainActivity.this.startActivity(webIntent);
-                    startActivityForResult(webIntent, 0);
+                    startActivityForResult(webIntent, 1);
 
                     break;
                 case R.id.gallery_fab:
 
                     debug.setText("Gallery");
 
-                    Intent galleryIntent = new Intent(Intent.ACTION_PICK,
-                            android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                    Intent galleryIntent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
                     // Start the Intent
-                    startActivityForResult(galleryIntent, 1);
+                    startActivityForResult(galleryIntent, 2);
 
                     break;
                 case R.id.fab_blur:
@@ -136,7 +139,9 @@ public class MainActivity extends AppCompatActivity {
             // When an Image is picked
             if (requestCode == 0 && resultCode == RESULT_OK && null != data) {
 
-            } else if(requestCode == 1 && resultCode == RESULT_OK && null != data){
+            }else if(requestCode == 1 && resultCode == RESULT_OK && null != data){
+
+            }else if(requestCode == 2 && resultCode == RESULT_OK && null != data){
 
                 // Get the Image from data
                 Uri selectedImage = data.getData();
