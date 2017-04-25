@@ -4,16 +4,19 @@ import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.os.Environment;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
-import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
-import android.webkit.WebViewClient;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.ProgressBar;
 import android.widget.TextView;
+
+import java.io.FileOutputStream;
+
+import static android.content.ContentValues.TAG;
 
 /**
  * Created by waimancheung on 4/4/2017.
@@ -23,6 +26,7 @@ public class WebActivity extends Activity{
     private WebView webView;
     private EditText editTextURL;
     private ImageButton leave_web,page_previous, page_forward, go_url, refresh_url, crop_web, del_url;
+    private Bitmap bitmap;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -62,6 +66,7 @@ public class WebActivity extends Activity{
         crop_web.setOnClickListener(clickListener);
         del_url.setOnClickListener(clickListener);
 
+
     }
 
     private View.OnClickListener clickListener= new View.OnClickListener() {
@@ -95,6 +100,26 @@ public class WebActivity extends Activity{
                     editTextURL.setText("");
                     break;
                 case R.id.crop_web:
+
+                    webView.setDrawingCacheEnabled(true);
+                    bitmap = webView.getDrawingCache();
+
+                    try {
+                        String fileName = Environment.getExternalStorageDirectory().getPath()+"/TransposeApp/imgs/temp.jpg";
+                        FileOutputStream fos = new FileOutputStream(fileName);
+                        bitmap.compress(Bitmap.CompressFormat.JPEG, 70, fos);
+                        fos.close();
+                    } catch (Exception e) {
+                        Log.e(TAG, e.getMessage());
+                    }finally {
+                        if(bitmap!=null) {
+                            bitmap.recycle();
+                        }
+                    }
+
+                    Intent cropIntent = new Intent(WebActivity.this, TransposeActivity.class);
+                    //MainActivity.this.startActivity(webIntent);
+                    startActivityForResult(cropIntent, 1);
                     break;
             }
         }

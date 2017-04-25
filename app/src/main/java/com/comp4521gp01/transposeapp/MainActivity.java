@@ -1,14 +1,20 @@
 package com.comp4521gp01.transposeapp;
 
+import android.Manifest;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -19,6 +25,14 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.TextView;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+
+import static android.content.ContentValues.TAG;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -60,8 +74,61 @@ public class MainActivity extends AppCompatActivity {
         Button button = (Button) findViewById(R.id.button);
         button.setOnClickListener(clickListener);
 
+        requestPermission();
 
     }
+
+    private void requestPermission() {
+        if(Build.VERSION.SDK_INT>Build.VERSION_CODES.LOLLIPOP_MR1) {
+
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                        200);
+            }
+
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        switch(requestCode){
+            case 200:
+                boolean writeAccepted = grantResults[0]== PackageManager.PERMISSION_GRANTED;
+                Log.d(TAG,"writeAcceped--"+writeAccepted);
+                prepareDirectory();
+                break;
+
+        }
+    }
+
+    private void prepareDirectory() {
+        String IMGS_PATH = Environment.getExternalStorageDirectory().toString() + "/TransposeApp/imgs";
+        File dir = new File(IMGS_PATH);
+        if (!dir.exists()) {
+            if (!dir.mkdirs()) {
+                Log.e(TAG, "ERROR: Creation of directory " + IMGS_PATH + " failed, check does Android Manifest have permission to write to external storage.");
+            }
+        } else {
+            Log.i(TAG, "Created directory " + IMGS_PATH);
+        }
+
+        String TESS_PATH = Environment.getExternalStorageDirectory().toString() + "/TransposeApp/tessdata";
+
+        try {
+            File dirt = new File(TESS_PATH);
+            if (!dirt.exists()) {
+                if (!dirt.mkdirs()) {
+                    Log.e(TAG, "ERROR: Creation of directory " + TESS_PATH + " failed, check does Android Manifest have permission to write to external storage.");
+                }
+            } else {
+                Log.i(TAG, "Created directory " + TESS_PATH);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 
     private View.OnClickListener clickListener= new View.OnClickListener() {
         @Override
@@ -74,7 +141,7 @@ public class MainActivity extends AppCompatActivity {
                 case R.id.camera_fab:
 
                     debug.setText("Camera");
-                    Intent cameraIntent = new Intent(MainActivity.this, TransposeActivity.class);
+                    Intent cameraIntent = new Intent(MainActivity.this, CalibrateActivity.class);
 
                     //MainActivity.this.startActivity(cameraIntent);
                     startActivityForResult(cameraIntent,0);
