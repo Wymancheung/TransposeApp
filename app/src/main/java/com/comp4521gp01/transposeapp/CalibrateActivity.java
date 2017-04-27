@@ -20,6 +20,7 @@ import java.util.ArrayList;
  */
 
 public class CalibrateActivity extends Activity{
+    public static final String EXTRA_MESSAGE = "calibrate.MESSAGE";
     private EditText editText_cali;
     private ImageView imageView;
     private Button refresh_cali, confirm_cali;
@@ -32,7 +33,7 @@ public class CalibrateActivity extends Activity{
         Intent intent = getIntent();
 
         editText_cali = (EditText) findViewById(R.id.editText_cali);
-        imageView = (ImageView) findViewById(R.id.show_image);
+        imageView = (ImageView) findViewById(R.id.imageView_cali);
         refresh_cali = (Button) findViewById(R.id.refresh_cali);
         confirm_cali = (Button) findViewById(R.id.confirm_cali);
 
@@ -51,6 +52,10 @@ public class CalibrateActivity extends Activity{
                     renewSpacing();
                     break;
                 case R.id.confirm_cali:
+                    Intent intent = new Intent(CalibrateActivity.this, TransposeActivity.class);
+                    String message = chordText;
+                    intent.putExtra(EXTRA_MESSAGE, message);
+                    startActivity(intent);
                     break;
             }
         }
@@ -138,7 +143,9 @@ public class CalibrateActivity extends Activity{
                     }else{
                         return i+1;
                     }
-                }else if(chordText.charAt(i+1) == 'A' || chordText.charAt(i+1) == 'B' || chordText.charAt(i+1) == 'C' || chordText.charAt(i+1) == 'D' || chordText.charAt(i+1) == 'E' || chordText.charAt(i+1) == 'F' || chordText.charAt(i+1) == 'G') {
+                }else if(chordText.charAt(i+1) == '7'){
+                    return i+1;
+                }else if(chordText.charAt(i+1) == '|' || chordText.charAt(i+1) == 'A' || chordText.charAt(i+1) == 'B' || chordText.charAt(i+1) == 'C' || chordText.charAt(i+1) == 'D' || chordText.charAt(i+1) == 'E' || chordText.charAt(i+1) == 'F' || chordText.charAt(i+1) == 'G') {
                     return i;
                 }else{
                     return -99;
@@ -152,7 +159,7 @@ public class CalibrateActivity extends Activity{
     }
 
     private void readImage() {
-        Bitmap bmp = BitmapFactory.decodeResource(getResources(),R.drawable.tttt);
+        Bitmap bmp = BitmapFactory.decodeResource(getResources(),R.drawable.edelweiss);
         imageView.setImageBitmap(bmp);
 
         TessBaseAPI baseApi = new TessBaseAPI();
