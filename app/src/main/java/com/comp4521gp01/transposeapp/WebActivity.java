@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Environment;
+import android.util.Base64;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
@@ -14,6 +15,7 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
+import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 
 import static android.content.ContentValues.TAG;
@@ -23,6 +25,8 @@ import static android.content.ContentValues.TAG;
  */
 
 public class WebActivity extends Activity{
+
+    public static final String EXTRA_MESSAGE = "MESSAGETOCROP";
     private WebView webView;
     private EditText editTextURL;
     private ImageButton leave_web,page_previous, page_forward, go_url, refresh_url, crop_web, del_url;
@@ -104,6 +108,7 @@ public class WebActivity extends Activity{
                     webView.setDrawingCacheEnabled(true);
                     bitmap = webView.getDrawingCache();
 
+                    /*
                     try {
                         String fileName = Environment.getExternalStorageDirectory().getPath()+"/TransposeApp/imgs/temp.jpg";
                         FileOutputStream fos = new FileOutputStream(fileName);
@@ -116,10 +121,17 @@ public class WebActivity extends Activity{
                             bitmap.recycle();
                         }
                     }
+                    */
 
-                    Intent cropIntent = new Intent(WebActivity.this, TransposeActivity.class);
-                    //MainActivity.this.startActivity(webIntent);
-                    startActivityForResult(cropIntent, 1);
+                    ByteArrayOutputStream baos=new  ByteArrayOutputStream();
+                    bitmap.compress(Bitmap.CompressFormat.PNG,100, baos);
+                    byte [] b=baos.toByteArray();
+                    String message= Base64.encodeToString(b, Base64.DEFAULT);
+
+                    Intent intentCali = new Intent(WebActivity.this, CropActivity.class);
+                    intentCali.putExtra(EXTRA_MESSAGE, message);
+                    startActivity(intentCali);
+
                     break;
             }
         }

@@ -2,11 +2,14 @@ package com.comp4521gp01.transposeapp;
 
 import android.Manifest;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.media.Image;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -17,30 +20,43 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Base64;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.widget.BaseAdapter;
 import android.widget.Button;
+import android.widget.GridView;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 
 import static android.content.ContentValues.TAG;
 
 public class MainActivity extends AppCompatActivity {
 
+    public static final String EXTRA_MESSAGE = "MESSAGETOCROP";
     private Boolean isFabOpen = false;
     private FloatingActionButton fab,camera_fab,web_fab,gallery_fab;
     private TextView fab_label,camera_fab_label,web_fab_label,gallery_fab_label,debug,fab_blur;
     private Animation fab_blur_open, fab_blur_close,fab_open,fab_close,rotate_forward,rotate_backward;
     private String imgDecodableString;
+    private GridView gridview;
+    private ImageAdapter imageAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,6 +91,7 @@ public class MainActivity extends AppCompatActivity {
         button.setOnClickListener(clickListener);
 
         requestPermission();
+        //loadGridview();
 
     }
 
@@ -126,6 +143,27 @@ public class MainActivity extends AppCompatActivity {
             }
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    private void loadGridview() {
+        gridview = (GridView) findViewById(R.id.gridview_main);
+        //imageAdapter = new ImageAdapter(this);
+        imageAdapter = new ImageAdapter();
+        gridview.setAdapter(imageAdapter);
+
+        String ExternalStorageDirectoryPath = Environment
+                .getExternalStorageDirectory()
+                .getAbsolutePath();
+
+        String targetPath = ExternalStorageDirectoryPath + "/TransposeApp/imgs/";
+
+        Toast.makeText(getApplicationContext(), targetPath, Toast.LENGTH_LONG).show();
+        File targetDirector = new File(targetPath);
+
+        File[] files = targetDirector.listFiles();
+        for (File file : files){
+            imageAdapter.add(file.getAbsolutePath());
         }
     }
 
@@ -222,12 +260,37 @@ public class MainActivity extends AppCompatActivity {
 
                 int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
                 imgDecodableString = cursor.getString(columnIndex);
-                cursor.close();
-                debug.setText(imgDecodableString);
-                //ImageView imageView = (ImageView) findViewById(R.id.imageView);
 
-                //imageView.setImageBitmap(BitmapFactory
-                //        .decodeFile(imgDecodableString));
+                BitmapFactory.Options options = new BitmapFactory.Options();
+                options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+                Bitmap bitmap = BitmapFactory.decodeFile(imgDecodableString, options);
+
+
+                int width = bitmap.getWidth();
+                int height = bitmap.getHeight();
+                float bitmapRatio = (float) width / (float) height;
+                if (bitmapRatio > 1) {
+                    width = 2000;//3000
+                    height = (int) (width / bitmapRatio);
+                } else {
+                    height = 2000;
+                    width = (int) (height * bitmapRatio);
+                }
+                Bitmap resizeBitmap = Bitmap.createScaledBitmap(bitmap, width, height, true);
+
+                cursor.close();
+
+                //debug.setText("Bitmaped");
+                //Bitmap to String
+                ByteArrayOutputStream baos=new  ByteArrayOutputStream();
+                resizeBitmap.compress(Bitmap.CompressFormat.PNG,100, baos);
+                byte [] b=baos.toByteArray();
+                String message= Base64.encodeToString(b, Base64.DEFAULT);
+
+                Intent intent = new Intent(MainActivity.this, CropActivity.class);
+                intent.putExtra(EXTRA_MESSAGE, message);
+                startActivity(intent);
+
 
             } else {
                 debug.setText(requestCode + ", But wrong");
@@ -303,4 +366,125 @@ public class MainActivity extends AppCompatActivity {
 
         return super.onOptionsItemSelected(item);
     }
+
+    private class ImageAdapter extends BaseAdapter{
+        //private Context mContext;
+        ArrayList<String> itemlist = new ArrayList<String>();
+
+        /*
+        public ImageAdapter(Context c){
+            mContext = c;
+        }
+        */
+
+        void add(String path){
+            itemlist.add(path);
+        }
+
+        @Override
+        public int getCount() {
+            return itemlist.size();
+        }
+
+        @Override
+        public Object getItem(int position) {
+            return null;
+        }
+
+        @Override
+        public long getItemId(int position) {
+            return 0;
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            Holder holder;
+            if(convertView == null) {
+                holder = new Holder();
+                convertView = LayoutInflater.from(getApplicationContext()).inflate(R.layout.grid_item_main, null);
+                holder.imageView = (ImageView) findViewById(R.id.imageview_grid_main);
+                holder.textView = (TextView) findViewById(R.id.textview_grid_main);
+                convertView.setTag(holder);
+            }else {
+                holder = (Holder) convertView.getTag();
+            }
+
+            holder.textView.setText("Test");
+
+            Bitmap bm = decodeSampledBitmapFromUri(itemlist.get(position), 220, 220);
+
+            holder.imageView.setImageBitmap(bm);
+
+            return convertView;
+
+            /*
+            Holder holder;
+            if (convertView == null) {  // if it's not recycled, initialize some attributes
+                //imageView = (ImageView) findViewById(R.id.imageview_grid_main);
+                convertView = LayoutInflater.from(getApplicationContext()).inflate(R.layout.grid_item_main,null);
+                holder = new Holder();
+                ImageView imageView = holder.imageView;
+                imageView = new ImageView(mContext);
+                imageView.setLayoutParams(new GridView.LayoutParams(220, 220));
+                imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
+                imageView.setPadding(8, 10, 8, 10);
+
+                TextView textView = holder.textView;
+                textView = new TextView(mContext);
+                textView.setText("Test");
+
+
+                convertView.setTag(holder);
+            } else {
+                //imageView = (ImageView) convertView;
+                holder = (Holder) convertView.getTag();
+            }
+
+            Bitmap bm = decodeSampledBitmapFromUri(itemlist.get(position), 220, 220);
+
+            holder.imageView.setImageBitmap(bm);
+            return convertView;
+            */
+        }
+
+        private Bitmap decodeSampledBitmapFromUri(String path, int reqWidth, int reqHeight){
+            Bitmap bm = null;
+            // First decode with inJustDecodeBounds=true to check dimensions
+            final BitmapFactory.Options options = new BitmapFactory.Options();
+            options.inJustDecodeBounds = true;
+            BitmapFactory.decodeFile(path, options);
+
+            // Calculate inSampleSize
+            options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight);
+
+            // Decode bitmap with inSampleSize set
+            options.inJustDecodeBounds = false;
+            bm = BitmapFactory.decodeFile(path, options);
+
+            return bm;
+        }
+
+        public int calculateInSampleSize(BitmapFactory.Options options, int reqWidth, int reqHeight) {
+            // Raw height and width of image
+            final int height = options.outHeight;
+            final int width = options.outWidth;
+            int inSampleSize = 1;
+
+            if (height > reqHeight || width > reqWidth) {
+                if (width > height) {
+                    inSampleSize = Math.round((float)height / (float)reqHeight);
+                } else {
+                    inSampleSize = Math.round((float)width / (float)reqWidth);
+                }
+            }
+
+            return inSampleSize;
+        }
+
+        class Holder{
+            ImageView imageView;
+            TextView textView;
+        }
+    }
+
 }

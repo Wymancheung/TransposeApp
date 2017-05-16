@@ -6,6 +6,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.os.Environment;
+import android.util.Base64;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -24,13 +25,14 @@ public class CalibrateActivity extends Activity{
     private EditText editText_cali;
     private ImageView imageView;
     private Button refresh_cali, confirm_cali;
-    private String chordText;
+    private String bittext, chordText;
 
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_calibrate);
         Intent intent = getIntent();
+        bittext = intent.getStringExtra(CropActivity.EXTRA_MESSAGE);
 
         editText_cali = (EditText) findViewById(R.id.editText_cali);
         imageView = (ImageView) findViewById(R.id.imageView_cali);
@@ -40,7 +42,7 @@ public class CalibrateActivity extends Activity{
         refresh_cali.setOnClickListener(clickListener);
         confirm_cali.setOnClickListener(clickListener);
 
-        readImage();
+        readImage(bittext);
     }
 
     private View.OnClickListener clickListener= new View.OnClickListener() {
@@ -158,9 +160,18 @@ public class CalibrateActivity extends Activity{
         }
     }
 
-    private void readImage() {
-        Bitmap bmp = BitmapFactory.decodeResource(getResources(),R.drawable.edelweiss);
+    private void readImage(String bittext) {
+        //Bitmap bmp = BitmapFactory.decodeResource(getResources(),R.drawable.edelweiss);
+        Bitmap bmp = null;
+        try {
+            byte [] encodeByte= Base64.decode(bittext,Base64.DEFAULT);
+            bmp=BitmapFactory.decodeByteArray(encodeByte, 0, encodeByte.length);
+        } catch(Exception e) {
+            e.getMessage();
+        }
+
         imageView.setImageBitmap(bmp);
+
 
         TessBaseAPI baseApi = new TessBaseAPI();
         baseApi.init(Environment.getExternalStorageDirectory().toString() + "/TransposeApp", "eng");

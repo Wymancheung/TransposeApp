@@ -86,7 +86,7 @@ public class TransposeActivity extends Activity {
                 key_flag = 1;
             }
         }
-        textView.append("\n\n\n Key Flag: " + key_flag +"\n");
+        //textView.append("\n\n\n Key Flag: " + key_flag +"\n");
     }
 
     private View.OnClickListener clickListener= new View.OnClickListener() {
