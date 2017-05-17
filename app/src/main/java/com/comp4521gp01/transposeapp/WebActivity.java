@@ -123,6 +123,7 @@ public class WebActivity extends Activity{
                     }
                     */
 
+                    /*
                     ByteArrayOutputStream baos=new  ByteArrayOutputStream();
                     bitmap.compress(Bitmap.CompressFormat.PNG,100, baos);
                     byte [] b=baos.toByteArray();
@@ -130,6 +131,14 @@ public class WebActivity extends Activity{
 
                     Intent intentCali = new Intent(WebActivity.this, CropActivity.class);
                     intentCali.putExtra(EXTRA_MESSAGE, message);
+                    startActivity(intentCali);
+                    */
+                    ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+                    byte[] byteArray = stream.toByteArray();
+
+                    Intent intentCali = new Intent(WebActivity.this, CropActivity.class);
+                    intentCali.putExtra("picture", byteArray);
                     startActivity(intentCali);
 
                     break;

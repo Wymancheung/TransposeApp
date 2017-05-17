@@ -179,7 +179,7 @@ public class MainActivity extends AppCompatActivity {
                 case R.id.camera_fab:
 
                     debug.setText("Camera");
-                    Intent cameraIntent = new Intent(MainActivity.this, CalibrateActivity.class);
+                    Intent cameraIntent = new Intent(MainActivity.this, CameraActivity.class);
 
                     //MainActivity.this.startActivity(cameraIntent);
                     startActivityForResult(cameraIntent,0);
@@ -280,7 +280,7 @@ public class MainActivity extends AppCompatActivity {
 
                 cursor.close();
 
-                //debug.setText("Bitmaped");
+                /*
                 //Bitmap to String
                 ByteArrayOutputStream baos=new  ByteArrayOutputStream();
                 resizeBitmap.compress(Bitmap.CompressFormat.PNG,100, baos);
@@ -290,7 +290,14 @@ public class MainActivity extends AppCompatActivity {
                 Intent intent = new Intent(MainActivity.this, CropActivity.class);
                 intent.putExtra(EXTRA_MESSAGE, message);
                 startActivity(intent);
+                */
+                ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                resizeBitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+                byte[] byteArray = stream.toByteArray();
 
+                Intent intent = new Intent(MainActivity.this, CropActivity.class);
+                intent.putExtra("picture", byteArray);
+                startActivity(intent);
 
             } else {
                 debug.setText(requestCode + ", But wrong");

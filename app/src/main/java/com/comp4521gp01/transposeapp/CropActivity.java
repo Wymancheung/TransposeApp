@@ -30,6 +30,7 @@ public class CropActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_crop);
         Intent intent = getIntent();
+        /*
         bittext = intent.getStringExtra(MainActivity.EXTRA_MESSAGE);
 
         //String to Bitmap
@@ -39,6 +40,12 @@ public class CropActivity extends Activity {
         } catch(Exception e) {
             e.getMessage();
         }
+        */
+
+        Bundle extras = getIntent().getExtras();
+        byte[] byteArray = extras.getByteArray("picture");
+
+        bitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
 
         cropImageView = (CropImageView) findViewById(R.id.cropImageView);
         rotate_crop = (Button) findViewById(R.id.rotate_crop);

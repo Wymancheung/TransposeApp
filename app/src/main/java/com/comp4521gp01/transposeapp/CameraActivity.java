@@ -3,8 +3,11 @@ package com.comp4521gp01.transposeapp;
 import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.ImageFormat;
 import android.graphics.SurfaceTexture;
 import android.hardware.camera2.*;
@@ -18,6 +21,7 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
+import android.util.Base64;
 import android.util.Log;
 import android.util.Size;
 import android.util.SparseIntArray;
@@ -30,6 +34,7 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -45,6 +50,243 @@ import java.util.List;
  */
 
 public class CameraActivity extends Activity{
+    public static final String EXTRA_MESSAGE = "MESSAGETOCROP";
+    private static final SparseIntArray ORIENTATIONS = new SparseIntArray();
+    private ImageButton shutter;
+
+    ///为了使照片竖直显示
+    static {
+        ORIENTATIONS.append(Surface.ROTATION_0, 90);
+        ORIENTATIONS.append(Surface.ROTATION_90, 0);
+        ORIENTATIONS.append(Surface.ROTATION_180, 270);
+        ORIENTATIONS.append(Surface.ROTATION_270, 180);
+    }
+
+    private SurfaceView mSurfaceView;
+    private SurfaceHolder mSurfaceHolder;
+    private CameraManager mCameraManager;//摄像头管理器
+    private Handler childHandler, mainHandler;
+    private String mCameraID;//摄像头Id 0 为后  1 为前
+    private ImageReader mImageReader;
+    private CameraCaptureSession mCameraCaptureSession;
+    private CameraDevice mCameraDevice;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_camera);
+        initVIew();
+    }
+
+    /**
+     * 初始化
+     */
+    private void initVIew() {
+        //mSurfaceView
+        mSurfaceView = (SurfaceView) findViewById(R.id.surfaceView);
+        //mSurfaceView.setOnClickListener(this);
+        mSurfaceHolder = mSurfaceView.getHolder();
+        mSurfaceHolder.setKeepScreenOn(true);
+        shutter = (ImageButton) findViewById(R.id.shutter);
+        shutter.setOnClickListener(clickListener);
+        // mSurfaceView添加回调
+        mSurfaceHolder.addCallback(new SurfaceHolder.Callback() {
+            @Override
+            public void surfaceCreated(SurfaceHolder holder) { //SurfaceView创建
+                // 初始化Camera
+                initCamera2();
+            }
+
+            @Override
+            public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+            }
+
+            @Override
+            public void surfaceDestroyed(SurfaceHolder holder) { //SurfaceView销毁
+                // 释放Camera资源
+                if (null != mCameraDevice) {
+                    mCameraDevice.close();
+                    CameraActivity.this.mCameraDevice = null;
+                }
+            }
+        });
+    }
+
+    /**
+     * 点击事件
+     */
+    private View.OnClickListener clickListener= new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            int id = v.getId();
+            switch (id) {
+                case R.id.shutter:
+                    takePicture();
+                    break;
+            }
+        }
+    };
+
+    private void initCamera2() {
+        HandlerThread handlerThread = new HandlerThread("Camera2");
+        handlerThread.start();
+        childHandler = new Handler(handlerThread.getLooper());
+        mainHandler = new Handler(getMainLooper());
+        mCameraID = "" + CameraCharacteristics.LENS_FACING_FRONT;//后摄像头
+        mImageReader = ImageReader.newInstance(1080, 1920, ImageFormat.JPEG,1);
+        mImageReader.setOnImageAvailableListener(new ImageReader.OnImageAvailableListener() { //可以在这里处理拍照得到的临时照片 例如，写入本地
+            @Override
+            public void onImageAvailable(ImageReader reader) {
+                mCameraDevice.close();
+                mSurfaceView.setVisibility(View.GONE);
+                // 拿到拍照照片数据
+                Image image = reader.acquireNextImage();
+                ByteBuffer buffer = image.getPlanes()[0].getBuffer();
+                byte[] bytes = new byte[buffer.remaining()];
+                buffer.get(bytes);//由缓冲区存入字节数组
+                final Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+
+                int width = bitmap.getWidth();
+                int height = bitmap.getHeight();
+                float bitmapRatio = (float) width / (float) height;
+                if (bitmapRatio > 1) {
+                    width = 1200;//620
+                    height = (int) (width / bitmapRatio);
+                } else {
+                    height = 1200;
+                    width = (int) (height * bitmapRatio);
+                }
+                Bitmap resizeBitmap = Bitmap.createScaledBitmap(bitmap, width, height, true);
+
+                /*
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                resizeBitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
+                byte[] b = baos.toByteArray();
+                String message = Base64.encodeToString(b, Base64.DEFAULT);
+
+                Intent intent = new Intent(CameraActivity.this, CropActivity.class);
+                intent.putExtra(EXTRA_MESSAGE, message);
+                startActivity(intent);
+                */
+
+                ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                resizeBitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+                byte[] byteArray = stream.toByteArray();
+
+                Intent intent = new Intent(CameraActivity.this, CropActivity.class);
+                intent.putExtra("picture", byteArray);
+                startActivity(intent);
+
+            }
+        }, mainHandler);
+        //获取摄像头管理
+        mCameraManager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
+        try {
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+                return;
+            }
+            //打开摄像头
+            mCameraManager.openCamera(mCameraID, stateCallback, mainHandler);
+        } catch (CameraAccessException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    /**
+     * 摄像头创建监听
+     */
+    private CameraDevice.StateCallback stateCallback = new CameraDevice.StateCallback() {
+        @Override
+        public void onOpened(CameraDevice camera) {//打开摄像头
+            mCameraDevice = camera;
+            //开启预览
+            takePreview();
+        }
+
+        @Override
+        public void onDisconnected(CameraDevice camera) {//关闭摄像头
+            if (null != mCameraDevice) {
+                mCameraDevice.close();
+                CameraActivity.this.mCameraDevice = null;
+            }
+        }
+
+        @Override
+        public void onError(CameraDevice camera, int error) {//发生错误
+            Toast.makeText(CameraActivity.this, "摄像头开启失败", Toast.LENGTH_SHORT).show();
+        }
+    };
+
+    /**
+     * 开始预览
+     */
+    private void takePreview() {
+        try {
+            // 创建预览需要的CaptureRequest.Builder
+            final CaptureRequest.Builder previewRequestBuilder = mCameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
+            // 将SurfaceView的surface作为CaptureRequest.Builder的目标
+            previewRequestBuilder.addTarget(mSurfaceHolder.getSurface());
+            // 创建CameraCaptureSession，该对象负责管理处理预览请求和拍照请求
+            mCameraDevice.createCaptureSession(Arrays.asList(mSurfaceHolder.getSurface(), mImageReader.getSurface()), new CameraCaptureSession.StateCallback() // ③
+            {
+                @Override
+                public void onConfigured(CameraCaptureSession cameraCaptureSession) {
+                    if (null == mCameraDevice) return;
+                    // 当摄像头已经准备好时，开始显示预览
+                    mCameraCaptureSession = cameraCaptureSession;
+                    try {
+                        // 自动对焦
+                        previewRequestBuilder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
+                        // 打开闪光灯
+                        previewRequestBuilder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH);
+                        // 显示预览
+                        CaptureRequest previewRequest = previewRequestBuilder.build();
+                        mCameraCaptureSession.setRepeatingRequest(previewRequest, null, childHandler);
+                    } catch (CameraAccessException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                @Override
+                public void onConfigureFailed(CameraCaptureSession cameraCaptureSession) {
+                    Toast.makeText(CameraActivity.this, "配置失败", Toast.LENGTH_SHORT).show();
+                }
+            }, childHandler);
+        } catch (CameraAccessException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * 拍照
+     */
+    private void takePicture() {
+        if (mCameraDevice == null) return;
+        // 创建拍照需要的CaptureRequest.Builder
+        final CaptureRequest.Builder captureRequestBuilder;
+        try {
+            captureRequestBuilder = mCameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
+            // 将imageReader的surface作为CaptureRequest.Builder的目标
+            captureRequestBuilder.addTarget(mImageReader.getSurface());
+            // 自动对焦
+            captureRequestBuilder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
+            // 自动曝光
+            captureRequestBuilder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH);
+            // 获取手机方向
+            int rotation = getWindowManager().getDefaultDisplay().getRotation();
+            // 根据设备方向计算设置照片的方向
+            captureRequestBuilder.set(CaptureRequest.JPEG_ORIENTATION, ORIENTATIONS.get(rotation));
+            //拍照
+            CaptureRequest mCaptureRequest = captureRequestBuilder.build();
+            mCameraCaptureSession.capture(mCaptureRequest, null, childHandler);
+        } catch (CameraAccessException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /*
+    public static final String EXTRA_MESSAGE = "MESSAGETOCROP";
     private static final String TAG = "AndroidCameraApi";
     private TextureView textureView;
     private ImageButton shutter;
@@ -191,12 +433,12 @@ public class CameraActivity extends Activity{
                 jpegSizes = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP).getOutputSizes(ImageFormat.JPEG);
             }
             int width = 640;
-            int height = 480;
+            int height = 400;
             if (jpegSizes != null && 0 < jpegSizes.length) {
                 width = jpegSizes[0].getWidth();
                 height = jpegSizes[0].getHeight();
             }
-            ImageReader reader = ImageReader.newInstance(width, height, ImageFormat.JPEG, 1);
+            ImageReader reader = ImageReader.newInstance(width, height, ImageFormat.RAW_SENSOR, 1);
             List<Surface> outputSurfaces = new ArrayList<Surface>(2);
             outputSurfaces.add(reader.getSurface());
             outputSurfaces.add(new Surface(textureView.getSurfaceTexture()));
@@ -206,6 +448,29 @@ public class CameraActivity extends Activity{
             // Orientation
             int rotation = getWindowManager().getDefaultDisplay().getRotation();
             captureBuilder.set(CaptureRequest.JPEG_ORIENTATION, ORIENTATIONS.get(rotation));
+
+            /*
+            ImageReader.OnImageAvailableListener readerListener = new ImageReader.OnImageAvailableListener() {
+                @Override
+                public void onImageAvailable(ImageReader reader) {
+                    Image image = null;
+                    image = reader.acquireLatestImage();
+                    ByteBuffer buffer = image.getPlanes()[0].getBuffer();
+                    byte[] bytes = new byte[buffer.capacity()];
+                    Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
+                    byte[] b = baos.toByteArray();
+                    String message = Base64.encodeToString(b, Base64.DEFAULT);
+
+                    Intent intent = new Intent(CameraActivity.this, CropActivity.class);
+                    intent.putExtra(EXTRA_MESSAGE, message);
+                    startActivity(intent);
+                }
+            };
+            ////
+
             final File file = new File(Environment.getExternalStorageDirectory()+"/pic.jpg");
             ImageReader.OnImageAvailableListener readerListener = new ImageReader.OnImageAvailableListener() {
                 @Override
@@ -239,13 +504,14 @@ public class CameraActivity extends Activity{
                     }
                 }
             };
+
             reader.setOnImageAvailableListener(readerListener, mBackgroundHandler);
             final CameraCaptureSession.CaptureCallback captureListener = new CameraCaptureSession.CaptureCallback() {
                 @Override
                 public void onCaptureCompleted(CameraCaptureSession session, CaptureRequest request, TotalCaptureResult result) {
                     super.onCaptureCompleted(session, request, result);
                     Toast.makeText(CameraActivity.this, "Saved:" + file, Toast.LENGTH_SHORT).show();
-                    createCameraPreview();
+                    //createCameraPreview();
                 }
             };
             cameraDevice.createCaptureSession(outputSurfaces, new CameraCaptureSession.StateCallback() {
@@ -362,4 +628,5 @@ public class CameraActivity extends Activity{
         stopBackgroundThread();
         super.onPause();
     }
+    */
 }
