@@ -11,6 +11,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 
 import com.googlecode.tesseract.android.TessBaseAPI;
 
@@ -42,7 +43,7 @@ public class CalibrateActivity extends Activity{
         refresh_cali.setOnClickListener(clickListener);
         confirm_cali.setOnClickListener(clickListener);
 
-        readImage(bittext);
+        readImage();
     }
 
     private View.OnClickListener clickListener= new View.OnClickListener() {
@@ -161,8 +162,9 @@ public class CalibrateActivity extends Activity{
         }
     }
 
-    private void readImage(String bittext) {
-        //Bitmap bmp = BitmapFactory.decodeResource(getResources(),R.drawable.edelweiss);
+    private void readImage() {
+        Bitmap bmp = BitmapFactory.decodeResource(getResources(),R.drawable.edelweiss);
+        /*
         Bitmap bmp = null;
         try {
             byte [] encodeByte= Base64.decode(bittext,Base64.DEFAULT);
@@ -170,9 +172,9 @@ public class CalibrateActivity extends Activity{
         } catch(Exception e) {
             e.getMessage();
         }
+        */
 
         imageView.setImageBitmap(bmp);
-
 
         TessBaseAPI baseApi = new TessBaseAPI();
         baseApi.init(Environment.getExternalStorageDirectory().toString() + "/TransposeApp", "eng");
@@ -180,6 +182,42 @@ public class CalibrateActivity extends Activity{
         baseApi.setImage(bmp);
         String outputText = baseApi.getUTF8Text();
         chordText = outputText.replace("\n", "").replace("\r", "");
+
+        ArrayList<Integer> startLine = new ArrayList<Integer>();
+        ArrayList<Integer> endLine = new ArrayList<Integer>();
+        for(int i = 0; i < chordText.length(); i++){
+            if(chordText.charAt(i) == '|'){
+                if(chordText.length() > i+1){
+                    if(isChord(i+1) == -99){
+                        startLine.add(i);
+                    }
+                }
+            }
+        }
+        int j = startLine.size();
+        for(int s = 0; s < j; s++){
+            String front = chordText.substring(0, startLine.get(startLine.size() - 1) + 1);
+            String back = "\n" + chordText.substring(startLine.get(startLine.size() - 1) + 1);
+            chordText = front + back;
+            startLine.remove(startLine.size() - 1);
+        }
+
+        for(int i = 0; i < chordText.length(); i++){
+            if(isChord(i) != -99){
+                if(i-2 != 0){
+                    if(chordText.charAt(i-1) == '|'){
+                        endLine.add(i-2);
+                    }
+                }
+            }
+        }
+        int k = endLine.size();
+        for(int s = 0; s < k; s++){
+            String front = chordText.substring(0, endLine.get(endLine.size() - 1) + 1);
+            String back = "\n" + chordText.substring(endLine.get(endLine.size() - 1) + 1);
+            chordText = front + back;
+            endLine.remove(endLine.size() - 1);
+        }
 
         editText_cali.setText(chordText);
     }

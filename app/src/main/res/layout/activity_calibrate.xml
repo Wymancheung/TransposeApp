@@ -1,25 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent">
 
 
-    <ImageView
-        android:id="@+id/imageView_cali"
+    <ScrollView
+        android:id="@+id/scrollview_image_cali"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="150dp"
+        android:fillViewport="true">
 
-    <EditText
-        android:id="@+id/editText_cali"
+        <ImageView
+            android:id="@+id/imageView_cali"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:paddingTop="120dp"
+            android:scaleType="centerInside"
+            android:src="@drawable/camera" />
+
+    </ScrollView>
+
+    <ScrollView
+        android:id="@+id/scrollview_text_cali"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@android:drawable/screen_background_light_transparent"
-        android:ems="10"
-        android:inputType="textMultiLine" />
+        android:layout_below="@id/scrollview_image_cali"
+        android:fillViewport="true">
+
+        <EditText
+            android:id="@+id/editText_cali"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@android:drawable/screen_background_light_transparent"
+            android:ems="10"
+            android:inputType="textMultiLine" />
+
+    </ScrollView>
 
     <LinearLayout
+        android:id="@+id/linear_cali"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="horizontal">
@@ -42,4 +64,4 @@
 
     </LinearLayout>
 
-</FrameLayout>
+</RelativeLayout>

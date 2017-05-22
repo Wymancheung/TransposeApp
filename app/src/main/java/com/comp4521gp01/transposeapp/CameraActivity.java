@@ -12,6 +12,7 @@ import android.graphics.ImageFormat;
 import android.graphics.SurfaceTexture;
 import android.hardware.camera2.*;
 import android.hardware.camera2.params.StreamConfigurationMap;
+import android.media.CameraProfile;
 import android.media.Image;
 import android.media.ImageReader;
 import android.os.Bundle;
@@ -52,7 +53,7 @@ import java.util.List;
 public class CameraActivity extends Activity{
     public static final String EXTRA_MESSAGE = "MESSAGETOCROP";
     private static final SparseIntArray ORIENTATIONS = new SparseIntArray();
-    private ImageButton shutter;
+    private ImageButton shutter,flashlight;
 
     ///为了使照片竖直显示
     static {
@@ -88,7 +89,9 @@ public class CameraActivity extends Activity{
         mSurfaceHolder = mSurfaceView.getHolder();
         mSurfaceHolder.setKeepScreenOn(true);
         shutter = (ImageButton) findViewById(R.id.shutter);
+        flashlight = (ImageButton) findViewById(R.id.flashlight);
         shutter.setOnClickListener(clickListener);
+        flashlight.setOnClickListener(clickListener);
         // mSurfaceView添加回调
         mSurfaceHolder.addCallback(new SurfaceHolder.Callback() {
             @Override
@@ -123,9 +126,15 @@ public class CameraActivity extends Activity{
                 case R.id.shutter:
                     takePicture();
                     break;
+                case R.id.flashlight:
+                    toggleFlash();
+                    break;
             }
         }
     };
+
+    private void toggleFlash() {
+    }
 
     private void initCamera2() {
         HandlerThread handlerThread = new HandlerThread("Camera2");

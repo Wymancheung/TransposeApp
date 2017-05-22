@@ -41,6 +41,7 @@
             android:layout_weight="1"
             android:background="@drawable/rounded_edge"
             android:scaleType="fitCenter"
-            android:src="@drawable/flash_off" />
+            android:src="@drawable/flash_off"
+            android:visibility="invisible" />
     </LinearLayout>
 </FrameLayout>
