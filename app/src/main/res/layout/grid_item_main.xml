@@ -19,6 +19,7 @@
                 android:id="@+id/gridview_image"
                 android:layout_width="190dp"
                 android:layout_height="150dp"
+                android:scaleType="centerCrop"
                 android:src="@mipmap/ic_launcher" />
 
             <TextView

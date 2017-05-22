@@ -163,8 +163,8 @@ public class CalibrateActivity extends Activity{
     }
 
     private void readImage() {
-        Bitmap bmp = BitmapFactory.decodeResource(getResources(),R.drawable.edelweiss);
-        /*
+        //Bitmap bmp = BitmapFactory.decodeResource(getResources(),R.drawable.edelweiss);
+
         Bitmap bmp = null;
         try {
             byte [] encodeByte= Base64.decode(bittext,Base64.DEFAULT);
@@ -172,7 +172,7 @@ public class CalibrateActivity extends Activity{
         } catch(Exception e) {
             e.getMessage();
         }
-        */
+
 
         imageView.setImageBitmap(bmp);
 
@@ -202,7 +202,7 @@ public class CalibrateActivity extends Activity{
             startLine.remove(startLine.size() - 1);
         }
 
-        for(int i = 0; i < chordText.length(); i++){
+        for(int i = 3; i < chordText.length(); i++){
             if(isChord(i) != -99){
                 if(i-2 != 0){
                     if(chordText.charAt(i-1) == '|'){
