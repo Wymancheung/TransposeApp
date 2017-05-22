@@ -78,6 +78,7 @@ public class CropActivity extends Activity {
                     Intent intent = new Intent(CropActivity.this, CalibrateActivity.class);
                     intent.putExtra(EXTRA_MESSAGE, message);
                     startActivity(intent);
+                    finish();
 
                     break;
             }

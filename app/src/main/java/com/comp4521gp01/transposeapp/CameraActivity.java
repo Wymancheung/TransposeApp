@@ -150,10 +150,10 @@ public class CameraActivity extends Activity{
                 int height = bitmap.getHeight();
                 float bitmapRatio = (float) width / (float) height;
                 if (bitmapRatio > 1) {
-                    width = 1200;//620
+                    width = 1000;//620
                     height = (int) (width / bitmapRatio);
                 } else {
-                    height = 1200;
+                    height = 1000;
                     width = (int) (height * bitmapRatio);
                 }
                 Bitmap resizeBitmap = Bitmap.createScaledBitmap(bitmap, width, height, true);
@@ -176,6 +176,7 @@ public class CameraActivity extends Activity{
                 Intent intent = new Intent(CameraActivity.this, CropActivity.class);
                 intent.putExtra("picture", byteArray);
                 startActivity(intent);
+                finish();
 
             }
         }, mainHandler);

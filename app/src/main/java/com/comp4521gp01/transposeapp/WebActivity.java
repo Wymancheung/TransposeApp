@@ -140,7 +140,7 @@ public class WebActivity extends Activity{
                     Intent intentCali = new Intent(WebActivity.this, CropActivity.class);
                     intentCali.putExtra("picture", byteArray);
                     startActivity(intentCali);
-
+                    finish();
                     break;
             }
         }

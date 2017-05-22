@@ -15,6 +15,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -29,6 +30,7 @@ import android.view.MenuItem;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.GridView;
@@ -48,6 +50,14 @@ import java.util.ArrayList;
 import static android.content.ContentValues.TAG;
 
 public class MainActivity extends AppCompatActivity {
+    Toolbar toolbar;
+    CollapsingToolbarLayout toolbarLayout;
+    GridView gridView;
+
+    private File[] files;
+    private String[] filesPaths;
+    private String[] filesNames;
+
 
     public static final String EXTRA_MESSAGE = "MESSAGETOCROP";
     private Boolean isFabOpen = false;
@@ -57,6 +67,7 @@ public class MainActivity extends AppCompatActivity {
     private String imgDecodableString;
     private GridView gridview;
     private ImageAdapter imageAdapter;
+    private TextView textviewGrid;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,7 +89,7 @@ public class MainActivity extends AppCompatActivity {
         camera_fab_label = (TextView) findViewById(R.id.camera_fab_label);
         web_fab_label = (TextView) findViewById(R.id.web_fab_label);
         gallery_fab_label = (TextView) findViewById(R.id.gallery_fab_label);
-        debug = (TextView) findViewById(R.id.debug);
+        //debug = (TextView) findViewById(R.id.debug);
         fab_blur = (TextView) findViewById(R.id.fab_blur);
 
         fab.setOnClickListener(clickListener);
@@ -87,11 +98,90 @@ public class MainActivity extends AppCompatActivity {
         gallery_fab.setOnClickListener(clickListener);
         fab_blur.setOnClickListener(clickListener);
 
-        Button button = (Button) findViewById(R.id.button);
-        button.setOnClickListener(clickListener);
+        //Button button = (Button) findViewById(R.id.button);
+        //button.setOnClickListener(clickListener);
 
         requestPermission();
-        //loadGridview();
+        loadGridview();
+
+    }
+
+    public void onResume() {
+        super.onResume();
+        loadGridview();
+    }
+
+    private void loadGridview() {
+        // Check for SD Card
+        if (!Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
+            Toast.makeText(this, "Error! No SDCARD Found!", Toast.LENGTH_LONG).show();
+        } else {
+            File dirDownload = Environment.getExternalStoragePublicDirectory("/TransposeApp/imgs");
+            if (dirDownload.isDirectory()) {
+                files = dirDownload.listFiles();
+                filesPaths = new String[files.length];
+                filesNames = new String[files.length];
+
+                for (int i = 0; i < files.length; i++) {
+                    filesPaths[i] = files[i].getAbsolutePath();
+                    filesNames[i] = files[i].getName();
+                }
+            }
+        }
+
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
+        gridView = (GridView) findViewById(R.id.grid);
+        gridView.setAdapter(new PhotoAdapter(this, filesNames, filesPaths));
+
+
+
+        gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view,
+                                    int position, long id) {
+
+                Intent i = new Intent(MainActivity.this, DisplayActivity.class);
+                // Pass String arrays FilePathStrings
+                i.putExtra("filepath", filesPaths);
+                // Pass String arrays FileNameStrings
+                i.putExtra("filename", filesNames);
+                // Pass click position
+                i.putExtra("position", position);
+                startActivity(i);
+            }
+        });
+
+        /*
+        gridView.setLongClickable(true);
+        gridview.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> arg0, View arg1,
+                                           int pos, long id) {
+                AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(MainActivity.this);
+                alertDialogBuilder.setMessage("Are you sure you want to delete" + filesNames[pos] + "?");
+                alertDialogBuilder.setPositiveButton("yes", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface arg0, int arg1) {
+                        //finish();
+                        //System.exit(0);
+                    }
+                });
+
+                alertDialogBuilder.setNegativeButton("No",new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+
+                AlertDialog alertDialog = alertDialogBuilder.create();
+                alertDialog.show();
+                return false;
+            }
+        });
+        */
 
     }
 
@@ -146,6 +236,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /*
     private void loadGridview() {
         gridview = (GridView) findViewById(R.id.gridview_main);
         //imageAdapter = new ImageAdapter(this);
@@ -166,7 +257,7 @@ public class MainActivity extends AppCompatActivity {
             imageAdapter.add(file.getAbsolutePath());
         }
     }
-
+    */
 
     private View.OnClickListener clickListener= new View.OnClickListener() {
         @Override
@@ -178,7 +269,7 @@ public class MainActivity extends AppCompatActivity {
                     break;
                 case R.id.camera_fab:
 
-                    debug.setText("Camera");
+//                    debug.setText("Camera");
                     Intent cameraIntent = new Intent(MainActivity.this, CameraActivity.class);
 
                     //MainActivity.this.startActivity(cameraIntent);
@@ -187,7 +278,7 @@ public class MainActivity extends AppCompatActivity {
                     break;
                 case R.id.web_fab:
 
-                    debug.setText("Web");
+//                    debug.setText("Web");
 
                     Intent webIntent = new Intent(MainActivity.this, WebActivity.class);
                     //MainActivity.this.startActivity(webIntent);
@@ -196,7 +287,7 @@ public class MainActivity extends AppCompatActivity {
                     break;
                 case R.id.gallery_fab:
 
-                    debug.setText("Gallery");
+//                    debug.setText("Gallery");
 
                     Intent galleryIntent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
                     // Start the Intent
@@ -206,11 +297,11 @@ public class MainActivity extends AppCompatActivity {
                 case R.id.fab_blur:
                     animateFAB();
                     break;
-                case R.id.button:
+                //case R.id.button:
 
-                    debug.setText("button");
+//                    debug.setText("button");
 
-                    break;
+             //       break;
             }
         }
     };
@@ -300,10 +391,10 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intent);
 
             } else {
-                debug.setText(requestCode + ", But wrong");
+//                debug.setText(requestCode + ", But wrong");
             }
         } catch (Exception e) {
-            debug.setText("Something went wrong");
+//            debug.setText("Something went wrong");
         }
         animateFAB();
     }
@@ -374,15 +465,94 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    private class ImageAdapter extends BaseAdapter {
+        private Context context;
+        ArrayList<String> imageList = new ArrayList<String>();
+
+        public ImageAdapter(Context c) {
+            context = c;
+        }
+
+        void add(String path){
+            imageList.add(path);
+        }
+
+        @Override
+        public int getCount() {
+            return imageList.size();
+        }
+
+        @Override
+        public Object getItem(int arg0) {
+            // TODO Auto-generated method stub
+            return null;
+        }
+
+        @Override
+        public long getItemId(int position) {
+            // TODO Auto-generated method stub
+            return 0;
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            ImageView imageView;
+            if (convertView == null) {
+                imageView = new ImageView(context);
+                imageView.setLayoutParams(new GridView.LayoutParams(440, 440));
+                imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
+                imageView.setPadding(8, 8, 8, 8);
+            } else {
+                imageView = (ImageView) convertView;
+            }
+
+            Bitmap bm = decodeSampledBitmapFromUri(imageList.get(position), 220, 220);
+            imageView.setImageBitmap(bm);
+
+            return imageView;
+        }
+
+        public Bitmap decodeSampledBitmapFromUri(String path, int reqWidth, int reqHeight) {
+
+            Bitmap bm = null;
+            final BitmapFactory.Options options = new BitmapFactory.Options();
+            options.inJustDecodeBounds = true;
+            BitmapFactory.decodeFile(path, options);
+            options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight);
+
+            options.inJustDecodeBounds = false;
+            bm = BitmapFactory.decodeFile(path, options);
+
+            return bm;
+        }
+
+        public int calculateInSampleSize(
+
+                BitmapFactory.Options options, int reqWidth, int reqHeight) {
+            final int height = options.outHeight;
+            final int width = options.outWidth;
+            int inSampleSize = 1;
+
+            if (height > reqHeight || width > reqWidth) {
+                if (width > height) {
+                    inSampleSize = Math.round((float)height / (float)reqHeight);
+                } else {
+                    inSampleSize = Math.round((float)width / (float)reqWidth);
+                }
+            }
+
+            return inSampleSize;
+        }
+    }
+/*
     private class ImageAdapter extends BaseAdapter{
         //private Context mContext;
         ArrayList<String> itemlist = new ArrayList<String>();
 
-        /*
-        public ImageAdapter(Context c){
-            mContext = c;
-        }
-        */
+       // public ImageAdapter(Context c){
+       //     mContext = c;
+        //}
+        
 
         void add(String path){
             itemlist.add(path);
@@ -420,7 +590,7 @@ public class MainActivity extends AppCompatActivity {
 
             Bitmap bm = decodeSampledBitmapFromUri(itemlist.get(position), 220, 220);
 
-            holder.imageView.setImageBitmap(bm);
+            //holder.imageView.setImageBitmap(bm);
 
             return convertView;
 
@@ -451,7 +621,7 @@ public class MainActivity extends AppCompatActivity {
 
             holder.imageView.setImageBitmap(bm);
             return convertView;
-            */
+            //
         }
 
         private Bitmap decodeSampledBitmapFromUri(String path, int reqWidth, int reqHeight){
@@ -493,5 +663,6 @@ public class MainActivity extends AppCompatActivity {
             TextView textView;
         }
     }
+    */
 
 }

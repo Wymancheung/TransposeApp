@@ -58,6 +58,7 @@ public class CalibrateActivity extends Activity{
                     String message = chordText;
                     intent.putExtra(EXTRA_MESSAGE, message);
                     startActivity(intent);
+                    finish();
                     break;
             }
         }

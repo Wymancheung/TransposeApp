@@ -148,6 +148,7 @@ public class TransposeActivity extends Activity {
                                 bitmap.recycle();
                             }
                         }
+                        finish();
                     }
                 })
                 .show();
