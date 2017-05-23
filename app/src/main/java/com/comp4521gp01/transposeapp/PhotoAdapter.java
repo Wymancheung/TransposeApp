@@ -62,6 +62,19 @@ public class PhotoAdapter extends BaseAdapter {
 
 
             Bitmap bmp = BitmapFactory.decodeFile(filesPaths[p]);
+            int width = bmp.getWidth();
+            int height = bmp.getHeight();
+
+            float bitmapRatio = (float) width / (float) height;
+            if (bitmapRatio > 1) {
+                width = 500;
+                height = (int) (width / bitmapRatio);
+            } else {
+                height = 500;
+                width = (int) (height * bitmapRatio);
+            }
+
+            bmp = Bitmap.createScaledBitmap(bmp, width, height, true);
             imageView.setImageBitmap(bmp);
         } else {
             grid = (View) convertView;

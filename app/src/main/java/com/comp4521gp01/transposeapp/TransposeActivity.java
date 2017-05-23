@@ -17,6 +17,7 @@ import android.support.design.internal.BottomNavigationItemView;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -65,7 +66,24 @@ public class TransposeActivity extends Activity {
         confirm_trans = (Button) findViewById(R.id.confirm_trans);
         imageView = (ImageView) findViewById(R.id.imageView_trans);
         textView = (TextView) findViewById(R.id.textView_trans);
-        textView.setText(chordText);
+        //textView.setText(chordText);
+
+        final int[] j = new int[1];
+
+        textView.post(new Runnable() {
+
+            @Override
+            public void run() {
+
+                j[0] = textView.getLineCount();
+                if(j[0] > 29){
+                    //float textSize = (20 * j[0])/29 ;
+                    textView.setTextSize(17);
+                }
+
+            }
+        });
+
 
 
         sharpList  = Arrays.asList("C","C#","D","D#","E","F","F#","G","G#","A","A#","B");
@@ -75,15 +93,56 @@ public class TransposeActivity extends Activity {
         transpose_down.setOnClickListener(clickListener);
         confirm_trans.setOnClickListener(clickListener);
 
+        ArrayList<Integer> chordspace = new ArrayList<Integer>();
+
         for(int i = 0; i < chordText.length(); i++){
             if(chordText.charAt(i) == '#'){
                 key_flag = 1;
+                for(int t = i; t < chordText.length(); t++){
+                    if(chordText.charAt(t) == 'b'){
+                        for(int y = 0; y < flatList.size() ; y++) {
+                            if (flatList.get(y).equals(getNote(t-1))) {
+                                chordspace.add(t-1);
+                                chordspace.add(y);
+                            }
+                        }
+                    }
+                }
+                int size = chordspace.size();
+                for(int s = 0; s < size; s=s+2){
+                    String front = chordText.substring(0, chordspace.get(chordspace.size()-2));
+                    String back = sharpList.get(chordspace.get(chordspace.size()-1)).toString() + chordText.substring(chordspace.get(chordspace.size()-2)+2);
+                    chordText = front + back;
+                    chordspace.remove(chordspace.size()-1);
+                    chordspace.remove(chordspace.size()-1);
+                }
+                textView.setText(chordText);
                 break;
             }else if(chordText.charAt(i) == 'b'){
                 key_flag = 2;
+                for(int t = i; t < chordText.length(); t++){
+                    if(chordText.charAt(t) == '#'){
+                        for(int y = 0; y < sharpList.size() ; y++) {
+                            if (sharpList.get(y).equals(getNote(t-1))) {
+                                chordspace.add(t-1);
+                                chordspace.add(y);
+                            }
+                        }
+                    }
+                }
+                int size = chordspace.size();
+                for(int s = 0; s < size; s=s+2){
+                    String front = chordText.substring(0, chordspace.get(chordspace.size()-2));
+                    String back = flatList.get(chordspace.get(chordspace.size()-1)).toString() + chordText.substring(chordspace.get(chordspace.size()-2)+2);
+                    chordText = front + back;
+                    chordspace.remove(chordspace.size()-1);
+                    chordspace.remove(chordspace.size()-1);
+                }
+                textView.setText(chordText);
                 break;
             }else{
                 key_flag = 1;
+                textView.setText(chordText);
             }
         }
         //textView.append("\n\n\n Key Flag: " + key_flag +"\n");
@@ -347,6 +406,11 @@ public class TransposeActivity extends Activity {
 
 
     private int isChord(int i){
+        if(chordText.length() > i+4){
+            if(chordText.charAt(i+1) == 's' && chordText.charAt(i+2) == 'u' && chordText.charAt(i+3) == 's' && chordText.charAt(i+4) == '4') {
+                return i;
+            }
+        }
         if(chordText.charAt(i) == 'A' || chordText.charAt(i) == 'B' || chordText.charAt(i) == 'C' || chordText.charAt(i) == 'D' || chordText.charAt(i) == 'E' || chordText.charAt(i) == 'F' || chordText.charAt(i) == 'G'){
             if(chordText.length() > i+1){
                 if(chordText.charAt(i+1) == 'b'){
@@ -403,6 +467,8 @@ public class TransposeActivity extends Activity {
                     return i + 1;
                 }else if(chordText.charAt(i+1) == ' '){
                         return i;
+                //}else if(isChord(i+1) == -99){
+                //    return i;
                 }else{
                     return -99;
                 }

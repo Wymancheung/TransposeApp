@@ -16,9 +16,7 @@
             android:id="@+id/imageView_cali"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_gravity="center"
-            android:paddingTop="120dp"
-            android:scaleType="centerInside"
+            android:scaleType="fitCenter"
             android:src="@drawable/camera" />
 
     </ScrollView>

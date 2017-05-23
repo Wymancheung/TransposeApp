@@ -56,6 +56,7 @@ public class CalibrateActivity extends Activity{
                     break;
                 case R.id.confirm_cali:
                     Intent intent = new Intent(CalibrateActivity.this, TransposeActivity.class);
+                    chordText = editText_cali.getText().toString();
                     String message = chordText;
                     intent.putExtra(EXTRA_MESSAGE, message);
                     startActivity(intent);
@@ -86,15 +87,65 @@ public class CalibrateActivity extends Activity{
                 String front = chordText.substring(0, chordspace.get(chordspace.size() - 1) + 1);
                 String back = " " + chordText.substring(chordspace.get(chordspace.size() - 1) + 1);
                 chordText = front + back;
+                int j = chordspace.get(chordspace.size()-1)+3;
+                //if(chordText.charAt(j) == 'A' || chordText.charAt(j) == 'B' || chordText.charAt(j) == 'C' || chordText.charAt(j) == 'D' || chordText.charAt(j) == 'E' || chordText.charAt(j) == 'F' || chordText.charAt(j) == 'G'){
+                //    chordspace2.add(j);
+                //};
             }
             chordspace.remove(chordspace.size() - 1);
         }
+
+        /*
+        int f = chordspace2.size();
+        for(int i = 0; i < f; i++){
+            if(chordText.charAt(chordspace2.get(chordspace2.size()-1)+1) != ' ') {
+                String front = chordText.substring(0, chordspace2.get(chordspace2.size() - 1) + 1);
+                String back = " " + chordText.substring(chordspace2.get(chordspace2.size() - 1) + 1);
+                chordText = front + back;
+            }
+            chordspace2.remove(chordspace2.size() - 1);
+        }
+
+*/
+
+        ArrayList<Integer> chordspace3 = new ArrayList<Integer>();
+        for(int o = 0; o < chordText.length(); o++){
+            if(chordText.charAt(o) == '\n' && chordText.charAt(o+1) == '|' && chordText.charAt(o+2) == '\n'){
+                chordspace3.add(o+1);
+            }
+        }
+        int f =chordspace3.size();
+        for(int i = 0; i < f; i++){
+            String front = chordText.substring(0, chordspace3.get(chordspace3.size()-1));
+            String back = chordText.substring(chordspace3.get(chordspace3.size()-1)+2);
+            chordText = front + back;
+            chordspace3.remove(chordspace3.size()-1);
+        }
+
+        ArrayList<Integer> chordspace2 = new ArrayList<Integer>();
+        for(int k = 0; k < chordText.length(); k++) {
+            if(chordText.charAt(k) == '|' && chordText.charAt(k+2) == '|'){
+                chordspace2.add(k);
+            }
+        }
+
+        f =chordspace2.size();
+        for(int i = 0; i < f; i++){
+            String front = chordText.substring(0, chordspace2.get(chordspace2.size()-1));
+            String back = chordText.substring(chordspace2.get(chordspace2.size()-1)+1);
+            chordText = front + back;
+            chordspace2.remove(chordspace2.size()-1);
+        }
+
         editText_cali.setText(chordText);
     }
 
     //B, Eb, C7, C/Bb, C#, C#m, Cm, Csus4, C#sus2, Dadd2
 
     private int isChord(int i){
+        if(chordText.charAt(i) == 'F' && chordText.charAt(i+1) == 's' && chordText.charAt(i+2) == 'u' && chordText.charAt(i+3) == 's'){
+            return i+4;
+        }
         if(chordText.charAt(i) == 'A' || chordText.charAt(i) == 'B' || chordText.charAt(i) == 'C' || chordText.charAt(i) == 'D' || chordText.charAt(i) == 'E' || chordText.charAt(i) == 'F' || chordText.charAt(i) == 'G'){
             if(chordText.length() > i+1){
                 if(chordText.charAt(i+1) == 'b'){
@@ -149,7 +200,9 @@ public class CalibrateActivity extends Activity{
                     }
                 }else if(chordText.charAt(i+1) == '7'){
                     return i+1;
-                }else if(chordText.charAt(i+1) == '|' || chordText.charAt(i+1) == 'A' || chordText.charAt(i+1) == 'B' || chordText.charAt(i+1) == 'C' || chordText.charAt(i+1) == 'D' || chordText.charAt(i+1) == 'E' || chordText.charAt(i+1) == 'F' || chordText.charAt(i+1) == 'G') {
+                //}else if(chordText.charAt(i+1) == '/' && isChord(i+2) != -99){
+                //    return i+2;
+                }else if( chordText.charAt(i+1) == '/' ||chordText.charAt(i+1) == '|' || chordText.charAt(i+1) == 'A' || chordText.charAt(i+1) == 'B' || chordText.charAt(i+1) == 'C' || chordText.charAt(i+1) == 'D' || chordText.charAt(i+1) == 'E' || chordText.charAt(i+1) == 'F' || chordText.charAt(i+1) == 'G') {
                     return i;
                 }else{
                     return -99;
@@ -173,22 +226,31 @@ public class CalibrateActivity extends Activity{
             e.getMessage();
         }
 
-
         imageView.setImageBitmap(bmp);
 
         TessBaseAPI baseApi = new TessBaseAPI();
         baseApi.init(Environment.getExternalStorageDirectory().toString() + "/TransposeApp", "eng");
-        baseApi.setPageSegMode(TessBaseAPI.PageSegMode.PSM_SPARSE_TEXT_OSD);
+        baseApi.setPageSegMode(TessBaseAPI.PageSegMode.PSM_SINGLE_BLOCK);//PSM_SINGLE_BLOCK
         baseApi.setImage(bmp);
         String outputText = baseApi.getUTF8Text();
-        chordText = outputText.replace("\n", "").replace("\r", "");
+
+        chordText = outputText.replace("\\","|").replace("-","").replace("\n", "|\n");
+
+        /*
+        chordText = outputText.replace("\n", "").replace("\r", "").replace("-","");
 
         ArrayList<Integer> startLine = new ArrayList<Integer>();
         ArrayList<Integer> endLine = new ArrayList<Integer>();
         for(int i = 0; i < chordText.length(); i++){
             if(chordText.charAt(i) == '|'){
-                if(chordText.length() > i+1){
-                    if(isChord(i+1) == -99){
+                if(chordText.length()> i+2){
+                    if(isChord(i+2) != -99 && chordText.charAt(i+1) == ' '){
+                        startLine.add(i);
+                    }else if(isChord(i+1) != -99){
+                        startLine.add(i);
+                    }
+                }else if(chordText.length() > i+1){
+                    if(isChord(i+1) != -99){
                         startLine.add(i);
                     }
                 }
@@ -196,15 +258,16 @@ public class CalibrateActivity extends Activity{
         }
         int j = startLine.size();
         for(int s = 0; s < j; s++){
-            String front = chordText.substring(0, startLine.get(startLine.size() - 1) + 1);
-            String back = "\n" + chordText.substring(startLine.get(startLine.size() - 1) + 1);
+            String front = chordText.substring(0, startLine.get(startLine.size() - 1));
+            String back = "\n" + chordText.substring(startLine.get(startLine.size() - 1));
             chordText = front + back;
             startLine.remove(startLine.size() - 1);
         }
 
+
         for(int i = 3; i < chordText.length(); i++){
             if(isChord(i) != -99){
-                if(i-2 != 0){
+                if(i-1 != 0){
                     if(chordText.charAt(i-1) == '|'){
                         endLine.add(i-2);
                     }
@@ -218,6 +281,9 @@ public class CalibrateActivity extends Activity{
             chordText = front + back;
             endLine.remove(endLine.size() - 1);
         }
+
+        */
+
 
         editText_cali.setText(chordText);
     }
