@@ -9,14 +9,14 @@
     <ScrollView
         android:id="@+id/scrollview_image_cali"
         android:layout_width="match_parent"
-        android:layout_height="150dp"
+        android:layout_height="230dp"
         android:fillViewport="true">
 
         <ImageView
             android:id="@+id/imageView_cali"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:scaleType="fitCenter"
+            android:scaleType="fitXY"
             android:src="@drawable/camera" />
 
     </ScrollView>
