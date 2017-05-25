@@ -1,0 +1,13 @@
+Readme
+
+There is a sample image,called "Sample.jpg", will be put under "imgs" directory.
+
+The following instructions are showed to demo to transpose functions of the App:
+A) Capture a image using Camera
+ - The image "SampleForCamera.png" under the App directory can be used to demo
+
+B) Capture a image from Web
+ - The image stored in Google Drive "URL: https://goo.gl/wsQFEX" can be used to demo
+
+C) Import from the gallery
+ - The sample image "Sample.jpg" can be used to demo.
