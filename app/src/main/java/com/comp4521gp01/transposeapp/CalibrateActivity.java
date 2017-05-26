@@ -1,3 +1,7 @@
+//# COMP 4521    #  CHEUNG, Wai Man Raymond   20199778   wmcheungaa@connect.ust.hk
+//# COMP 4521    #  LAW, Chiu Kwan  20212087   cklawad@connect.ust.hk
+//# COMP 4521    #  WONG, Ho Yin Calvin  20196726  hycwong@connect.ust.hk
+
 package com.comp4521gp01.transposeapp;
 
 import android.app.Activity;
@@ -11,10 +15,10 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
 
 import com.googlecode.tesseract.android.TessBaseAPI;
 
+import java.io.File;
 import java.util.ArrayList;
 
 /**
@@ -43,7 +47,11 @@ public class CalibrateActivity extends Activity{
         refresh_cali.setOnClickListener(clickListener);
         confirm_cali.setOnClickListener(clickListener);
 
-        readImage();
+
+        File path = Environment.getExternalStoragePublicDirectory("/TransposeApp");
+        if(path.isDirectory()){
+            readImage();
+        }
     }
 
     private View.OnClickListener clickListener= new View.OnClickListener() {
@@ -77,10 +85,6 @@ public class CalibrateActivity extends Activity{
 
         editText_cali.append("\n\n\n");
 
-        //editText_cali.append(chordspace.size() + "\n");
-        //editText_cali.append(chordspace.get(chordspace.size()-1) + "\n");
-        //editText_cali.append(chordText.charAt(chordspace.get(chordspace.size()-1)) + "\n");
-
         int s = chordspace.size();
         for(int i = 0; i < s; i++){
             if(chordText.charAt(chordspace.get(chordspace.size()-1)+1) != ' ') {
@@ -88,25 +92,9 @@ public class CalibrateActivity extends Activity{
                 String back = " " + chordText.substring(chordspace.get(chordspace.size() - 1) + 1);
                 chordText = front + back;
                 int j = chordspace.get(chordspace.size()-1)+3;
-                //if(chordText.charAt(j) == 'A' || chordText.charAt(j) == 'B' || chordText.charAt(j) == 'C' || chordText.charAt(j) == 'D' || chordText.charAt(j) == 'E' || chordText.charAt(j) == 'F' || chordText.charAt(j) == 'G'){
-                //    chordspace2.add(j);
-                //};
             }
             chordspace.remove(chordspace.size() - 1);
         }
-
-        /*
-        int f = chordspace2.size();
-        for(int i = 0; i < f; i++){
-            if(chordText.charAt(chordspace2.get(chordspace2.size()-1)+1) != ' ') {
-                String front = chordText.substring(0, chordspace2.get(chordspace2.size() - 1) + 1);
-                String back = " " + chordText.substring(chordspace2.get(chordspace2.size() - 1) + 1);
-                chordText = front + back;
-            }
-            chordspace2.remove(chordspace2.size() - 1);
-        }
-
-*/
 
         ArrayList<Integer> chordspace3 = new ArrayList<Integer>();
         for(int o = 0; o < chordText.length(); o++){
@@ -200,8 +188,6 @@ public class CalibrateActivity extends Activity{
                     }
                 }else if(chordText.charAt(i+1) == '7'){
                     return i+1;
-                //}else if(chordText.charAt(i+1) == '/' && isChord(i+2) != -99){
-                //    return i+2;
                 }else if( chordText.charAt(i+1) == '/' ||chordText.charAt(i+1) == '|' || chordText.charAt(i+1) == 'A' || chordText.charAt(i+1) == 'B' || chordText.charAt(i+1) == 'C' || chordText.charAt(i+1) == 'D' || chordText.charAt(i+1) == 'E' || chordText.charAt(i+1) == 'F' || chordText.charAt(i+1) == 'G') {
                     return i;
                 }else{
@@ -216,8 +202,6 @@ public class CalibrateActivity extends Activity{
     }
 
     private void readImage() {
-        //Bitmap bmp = BitmapFactory.decodeResource(getResources(),R.drawable.edelweiss);
-
         Bitmap bmp = null;
         try {
             byte [] encodeByte= Base64.decode(bittext,Base64.DEFAULT);
@@ -228,63 +212,16 @@ public class CalibrateActivity extends Activity{
 
         imageView.setImageBitmap(bmp);
 
-        TessBaseAPI baseApi = new TessBaseAPI();
-        baseApi.init(Environment.getExternalStorageDirectory().toString() + "/TransposeApp", "eng");
-        baseApi.setPageSegMode(TessBaseAPI.PageSegMode.PSM_SINGLE_BLOCK);//PSM_SINGLE_BLOCK
-        baseApi.setImage(bmp);
-        String outputText = baseApi.getUTF8Text();
+        String outputText = null;
+
+
+            TessBaseAPI baseApi = new TessBaseAPI();
+            baseApi.init(Environment.getExternalStorageDirectory().toString() + "/TransposeApp", "eng");
+            baseApi.setPageSegMode(TessBaseAPI.PageSegMode.PSM_SINGLE_BLOCK);//PSM_SINGLE_BLOCK
+            baseApi.setImage(bmp);
+            outputText = baseApi.getUTF8Text();
 
         chordText = outputText.replace("\\","|").replace("-","").replace("\n", "|\n");
-
-        /*
-        chordText = outputText.replace("\n", "").replace("\r", "").replace("-","");
-
-        ArrayList<Integer> startLine = new ArrayList<Integer>();
-        ArrayList<Integer> endLine = new ArrayList<Integer>();
-        for(int i = 0; i < chordText.length(); i++){
-            if(chordText.charAt(i) == '|'){
-                if(chordText.length()> i+2){
-                    if(isChord(i+2) != -99 && chordText.charAt(i+1) == ' '){
-                        startLine.add(i);
-                    }else if(isChord(i+1) != -99){
-                        startLine.add(i);
-                    }
-                }else if(chordText.length() > i+1){
-                    if(isChord(i+1) != -99){
-                        startLine.add(i);
-                    }
-                }
-            }
-        }
-        int j = startLine.size();
-        for(int s = 0; s < j; s++){
-            String front = chordText.substring(0, startLine.get(startLine.size() - 1));
-            String back = "\n" + chordText.substring(startLine.get(startLine.size() - 1));
-            chordText = front + back;
-            startLine.remove(startLine.size() - 1);
-        }
-
-
-        for(int i = 3; i < chordText.length(); i++){
-            if(isChord(i) != -99){
-                if(i-1 != 0){
-                    if(chordText.charAt(i-1) == '|'){
-                        endLine.add(i-2);
-                    }
-                }
-            }
-        }
-        int k = endLine.size();
-        for(int s = 0; s < k; s++){
-            String front = chordText.substring(0, endLine.get(endLine.size() - 1) + 1);
-            String back = "\n" + chordText.substring(endLine.get(endLine.size() - 1) + 1);
-            chordText = front + back;
-            endLine.remove(endLine.size() - 1);
-        }
-
-        */
-
-
         editText_cali.setText(chordText);
     }
 }

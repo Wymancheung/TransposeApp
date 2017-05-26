@@ -1,3 +1,6 @@
+//# COMP 4521    #  CHEUNG, Wai Man Raymond   20199778   wmcheungaa@connect.ust.hk
+//# COMP 4521    #  LAW, Chiu Kwan  20212087   cklawad@connect.ust.hk
+//# COMP 4521    #  WONG, Ho Yin Calvin  20196726  hycwong@connect.ust.hk
 package com.comp4521gp01.transposeapp;
 
 import android.app.Activity;
@@ -19,7 +22,6 @@ import java.io.File;
  */
 
 public class DisplayActivity extends Activity {
-    // Declare Variable
     TextView text;
     ImageView imageview;
 

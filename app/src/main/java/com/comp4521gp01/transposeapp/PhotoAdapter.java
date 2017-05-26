@@ -1,3 +1,6 @@
+//# COMP 4521    #  CHEUNG, Wai Man Raymond   20199778   wmcheungaa@connect.ust.hk
+//# COMP 4521    #  LAW, Chiu Kwan  20212087   cklawad@connect.ust.hk
+//# COMP 4521    #  WONG, Ho Yin Calvin  20196726  hycwong@connect.ust.hk
 package com.comp4521gp01.transposeapp;
 
 /**
@@ -5,17 +8,18 @@ package com.comp4521gp01.transposeapp;
  */
 
 import android.content.Context;
-import android.content.Intent;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.util.Log;
+import android.util.DisplayMetrics;
+import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 public class PhotoAdapter extends BaseAdapter {
     private Context ctx;
@@ -31,7 +35,11 @@ public class PhotoAdapter extends BaseAdapter {
 
     @Override
     public int getCount() {
-        return filesNames.length;
+        if(filesNames == null){
+            return 0;
+        }else {
+            return filesNames.length;
+        }
     }
 
     @Override
@@ -58,6 +66,7 @@ public class PhotoAdapter extends BaseAdapter {
             String fileName = filesNames[p];
             fileName = fileName.replace(".jpg", "");
 
+
             textView.setText(fileName);
 
 
@@ -75,6 +84,9 @@ public class PhotoAdapter extends BaseAdapter {
             }
 
             bmp = Bitmap.createScaledBitmap(bmp, width, height, true);
+
+            //textView.setWidth(Resources.getSystem().getDisplayMetrics().widthPixels /2 - 10);
+            //imageView.setMaxWidth(Resources.getSystem().getDisplayMetrics().widthPixels/2 - 10);
             imageView.setImageBitmap(bmp);
         } else {
             grid = (View) convertView;
@@ -84,4 +96,6 @@ public class PhotoAdapter extends BaseAdapter {
 
         return grid;
     }
+
+
 }

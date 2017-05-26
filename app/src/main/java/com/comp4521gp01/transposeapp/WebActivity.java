@@ -1,12 +1,12 @@
+//# COMP 4521    #  CHEUNG, Wai Man Raymond   20199778   wmcheungaa@connect.ust.hk
+//# COMP 4521    #  LAW, Chiu Kwan  20212087   cklawad@connect.ust.hk
+//# COMP 4521    #  WONG, Ho Yin Calvin  20196726  hycwong@connect.ust.hk
 package com.comp4521gp01.transposeapp;
 
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
-import android.os.Environment;
-import android.util.Base64;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.webkit.WebSettings;
@@ -16,9 +16,6 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 
 import java.io.ByteArrayOutputStream;
-import java.io.FileOutputStream;
-
-import static android.content.ContentValues.TAG;
 
 /**
  * Created by waimancheung on 4/4/2017.
@@ -48,7 +45,6 @@ public class WebActivity extends Activity{
         webView = (WebView) findViewById(R.id.webview);
         webView.getSettings().setJavaScriptEnabled(true);
         WebSettings webSettings = webView.getSettings();
-        //webSettings.setSupportZoom(true);
         webSettings.setBuiltInZoomControls(true);
         webSettings.setDisplayZoomControls(false);
         webView.requestFocus();
@@ -107,32 +103,6 @@ public class WebActivity extends Activity{
 
                     webView.setDrawingCacheEnabled(true);
                     bitmap = webView.getDrawingCache();
-
-                    /*
-                    try {
-                        String fileName = Environment.getExternalStorageDirectory().getPath()+"/TransposeApp/imgs/temp.jpg";
-                        FileOutputStream fos = new FileOutputStream(fileName);
-                        bitmap.compress(Bitmap.CompressFormat.JPEG, 70, fos);
-                        fos.close();
-                    } catch (Exception e) {
-                        Log.e(TAG, e.getMessage());
-                    }finally {
-                        if(bitmap!=null) {
-                            bitmap.recycle();
-                        }
-                    }
-                    */
-
-                    /*
-                    ByteArrayOutputStream baos=new  ByteArrayOutputStream();
-                    bitmap.compress(Bitmap.CompressFormat.PNG,100, baos);
-                    byte [] b=baos.toByteArray();
-                    String message= Base64.encodeToString(b, Base64.DEFAULT);
-
-                    Intent intentCali = new Intent(WebActivity.this, CropActivity.class);
-                    intentCali.putExtra(EXTRA_MESSAGE, message);
-                    startActivity(intentCali);
-                    */
                     ByteArrayOutputStream stream = new ByteArrayOutputStream();
                     bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
                     byte[] byteArray = stream.toByteArray();

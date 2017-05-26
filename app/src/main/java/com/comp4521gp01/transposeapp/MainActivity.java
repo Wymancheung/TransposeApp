@@ -1,3 +1,6 @@
+//# COMP 4521    #  CHEUNG, Wai Man Raymond   20199778   wmcheungaa@connect.ust.hk
+//# COMP 4521    #  LAW, Chiu Kwan  20212087   cklawad@connect.ust.hk
+//# COMP 4521    #  WONG, Ho Yin Calvin  20196726  hycwong@connect.ust.hk
 package com.comp4521gp01.transposeapp;
 
 import android.Manifest;
@@ -6,10 +9,10 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.AssetManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.media.Image;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -21,9 +24,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Base64;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -32,10 +33,8 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
-import android.widget.Button;
 import android.widget.GridView;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -62,12 +61,9 @@ public class MainActivity extends AppCompatActivity {
     public static final String EXTRA_MESSAGE = "MESSAGETOCROP";
     private Boolean isFabOpen = false;
     private FloatingActionButton fab,camera_fab,web_fab,gallery_fab;
-    private TextView fab_label,camera_fab_label,web_fab_label,gallery_fab_label,debug,fab_blur;
+    private TextView fab_label,camera_fab_label,web_fab_label,gallery_fab_label,fab_blur;
     private Animation fab_blur_open, fab_blur_close,fab_open,fab_close,rotate_forward,rotate_backward;
     private String imgDecodableString;
-    private GridView gridview;
-    private ImageAdapter imageAdapter;
-    private TextView textviewGrid;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -89,7 +85,6 @@ public class MainActivity extends AppCompatActivity {
         camera_fab_label = (TextView) findViewById(R.id.camera_fab_label);
         web_fab_label = (TextView) findViewById(R.id.web_fab_label);
         gallery_fab_label = (TextView) findViewById(R.id.gallery_fab_label);
-        //debug = (TextView) findViewById(R.id.debug);
         fab_blur = (TextView) findViewById(R.id.fab_blur);
 
         fab.setOnClickListener(clickListener);
@@ -98,17 +93,24 @@ public class MainActivity extends AppCompatActivity {
         gallery_fab.setOnClickListener(clickListener);
         fab_blur.setOnClickListener(clickListener);
 
-        //Button button = (Button) findViewById(R.id.button);
-        //button.setOnClickListener(clickListener);
-
         requestPermission();
-        loadGridview();
+        try {
+            prepareDirectory();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        //Toast.makeText(this, "Please Read Readme.txt under the App directory", Toast.LENGTH_LONG).show();
 
     }
 
     public void onResume() {
         super.onResume();
-        loadGridview();
+        File dirDownload = Environment.getExternalStoragePublicDirectory("/TransposeApp/imgs");
+        if(dirDownload.length() != 0){
+            loadGridview();
+        }
+
     }
 
     private void loadGridview() {
@@ -125,6 +127,10 @@ public class MainActivity extends AppCompatActivity {
                 for (int i = 0; i < files.length; i++) {
                     filesPaths[i] = files[i].getAbsolutePath();
                     filesNames[i] = files[i].getName();
+                }
+
+                if(files.length == 0){
+                    return;
                 }
             }
         }
@@ -153,36 +159,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        /*
-        gridView.setLongClickable(true);
-        gridview.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-            @Override
-            public boolean onItemLongClick(AdapterView<?> arg0, View arg1,
-                                           int pos, long id) {
-                AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(MainActivity.this);
-                alertDialogBuilder.setMessage("Are you sure you want to delete" + filesNames[pos] + "?");
-                alertDialogBuilder.setPositiveButton("yes", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface arg0, int arg1) {
-                        //finish();
-                        //System.exit(0);
-                    }
-                });
-
-                alertDialogBuilder.setNegativeButton("No",new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss();
-                    }
-                });
-
-                AlertDialog alertDialog = alertDialogBuilder.create();
-                alertDialog.show();
-                return false;
-            }
-        });
-        */
-
     }
 
     private void requestPermission() {
@@ -199,17 +175,73 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        switch(requestCode){
+        switch(requestCode) {
             case 200:
-                boolean writeAccepted = grantResults[0]== PackageManager.PERMISSION_GRANTED;
-                Log.d(TAG,"writeAcceped--"+writeAccepted);
-                prepareDirectory();
+                boolean writeAccepted = grantResults[0] == PackageManager.PERMISSION_GRANTED;
+                Log.d(TAG, "writeAcceped--" + writeAccepted);
+                try {
+                    prepareDirectory();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.CAMERA},
+                        100);
+                break;
+            case 100:
+
+                String TESS_PATH = Environment.getExternalStorageDirectory().toString() + "/TransposeApp/";
+                if (!(new File(TESS_PATH + "tessdata/" + "eng.traineddata")).exists()) {
+                    try {
+
+                        AssetManager assetManager = getAssets();
+                        for (String file : assetManager.list("tessdata")) {
+                            InputStream in = assetManager.open("tessdata/" + file);
+                            OutputStream out = new FileOutputStream(TESS_PATH + "tessdata/" + file);
+                            byte[] buf = new byte[1024];
+                            int len;
+                            while ((len = in.read(buf)) > 0) {
+                                out.write(buf, 0, len);
+                            }
+                            in.close();
+                            out.close();
+                        }
+                        Log.v(TAG, "Copying ocr traineddata sacceded");
+                    } catch (IOException e) {
+                        Log.e(TAG, "Was unable to copy osr traineddata " + e.toString());
+                    }
+                }
+
+                if (!(new File(TESS_PATH + "imgs/" + "Sample.jpg")).exists()) {
+                    try {
+
+                        AssetManager assetManager = getAssets();
+                        for (String file : assetManager.list("image")) {
+                            InputStream in = assetManager.open("image/" + file);
+                            OutputStream out = new FileOutputStream(TESS_PATH + "imgs/" + file);
+                            byte[] buf = new byte[1024];
+                            int len;
+                            while ((len = in.read(buf)) > 0) {
+                                out.write(buf, 0, len);
+                            }
+                            in.close();
+                            out.close();
+                        }
+                        Log.v(TAG, "Copying ocr traineddata sacceded");
+                    } catch (IOException e) {
+                        Log.e(TAG, "Was unable to copy osr traineddata " + e.toString());
+                    }
+                }
+
+
+                loadGridview();
                 break;
 
         }
     }
 
-    private void prepareDirectory() {
+    private void prepareDirectory() throws IOException {
         String IMGS_PATH = Environment.getExternalStorageDirectory().toString() + "/TransposeApp/imgs";
         File dir = new File(IMGS_PATH);
         if (!dir.exists()) {
@@ -234,30 +266,8 @@ public class MainActivity extends AppCompatActivity {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
     }
-
-    /*
-    private void loadGridview() {
-        gridview = (GridView) findViewById(R.id.gridview_main);
-        //imageAdapter = new ImageAdapter(this);
-        imageAdapter = new ImageAdapter();
-        gridview.setAdapter(imageAdapter);
-
-        String ExternalStorageDirectoryPath = Environment
-                .getExternalStorageDirectory()
-                .getAbsolutePath();
-
-        String targetPath = ExternalStorageDirectoryPath + "/TransposeApp/imgs/";
-
-        Toast.makeText(getApplicationContext(), targetPath, Toast.LENGTH_LONG).show();
-        File targetDirector = new File(targetPath);
-
-        File[] files = targetDirector.listFiles();
-        for (File file : files){
-            imageAdapter.add(file.getAbsolutePath());
-        }
-    }
-    */
 
     private View.OnClickListener clickListener= new View.OnClickListener() {
         @Override
@@ -267,41 +277,26 @@ public class MainActivity extends AppCompatActivity {
                 case R.id.fab:
                     animateFAB();
                     break;
+
                 case R.id.camera_fab:
-
-//                    debug.setText("Camera");
                     Intent cameraIntent = new Intent(MainActivity.this, CameraActivity.class);
-
-                    //MainActivity.this.startActivity(cameraIntent);
                     startActivityForResult(cameraIntent,0);
-
                     break;
+
                 case R.id.web_fab:
-
-//                    debug.setText("Web");
-
                     Intent webIntent = new Intent(MainActivity.this, WebActivity.class);
-                    //MainActivity.this.startActivity(webIntent);
                     startActivityForResult(webIntent, 1);
-
                     break;
+
                 case R.id.gallery_fab:
-
-//                    debug.setText("Gallery");
-
                     Intent galleryIntent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
                     // Start the Intent
                     startActivityForResult(galleryIntent, 2);
-
                     break;
+
                 case R.id.fab_blur:
                     animateFAB();
                     break;
-                //case R.id.button:
-
-//                    debug.setText("button");
-
-             //       break;
             }
         }
     };
@@ -371,17 +366,6 @@ public class MainActivity extends AppCompatActivity {
 
                 cursor.close();
 
-                /*
-                //Bitmap to String
-                ByteArrayOutputStream baos=new  ByteArrayOutputStream();
-                resizeBitmap.compress(Bitmap.CompressFormat.PNG,100, baos);
-                byte [] b=baos.toByteArray();
-                String message= Base64.encodeToString(b, Base64.DEFAULT);
-
-                Intent intent = new Intent(MainActivity.this, CropActivity.class);
-                intent.putExtra(EXTRA_MESSAGE, message);
-                startActivity(intent);
-                */
                 ByteArrayOutputStream stream = new ByteArrayOutputStream();
                 resizeBitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
                 byte[] byteArray = stream.toByteArray();
@@ -390,11 +374,8 @@ public class MainActivity extends AppCompatActivity {
                 intent.putExtra("picture", byteArray);
                 startActivity(intent);
 
-            } else {
-//                debug.setText(requestCode + ", But wrong");
             }
         } catch (Exception e) {
-//            debug.setText("Something went wrong");
         }
         animateFAB();
     }
@@ -456,15 +437,16 @@ public class MainActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }else if (id == R.id.action_faq){
+        if (id == R.id.action_faq){
+            Intent intent = new Intent(MainActivity.this, FAQActivity.class);
+            startActivity(intent);
             return true;
         }
 
         return super.onOptionsItemSelected(item);
     }
 
+    /*
     private class ImageAdapter extends BaseAdapter {
         private Context context;
         ArrayList<String> imageList = new ArrayList<String>();
@@ -544,125 +526,5 @@ public class MainActivity extends AppCompatActivity {
             return inSampleSize;
         }
     }
-/*
-    private class ImageAdapter extends BaseAdapter{
-        //private Context mContext;
-        ArrayList<String> itemlist = new ArrayList<String>();
-
-       // public ImageAdapter(Context c){
-       //     mContext = c;
-        //}
-        
-
-        void add(String path){
-            itemlist.add(path);
-        }
-
-        @Override
-        public int getCount() {
-            return itemlist.size();
-        }
-
-        @Override
-        public Object getItem(int position) {
-            return null;
-        }
-
-        @Override
-        public long getItemId(int position) {
-            return 0;
-        }
-
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-            Holder holder;
-            if(convertView == null) {
-                holder = new Holder();
-                convertView = LayoutInflater.from(getApplicationContext()).inflate(R.layout.grid_item_main, null);
-                holder.imageView = (ImageView) findViewById(R.id.imageview_grid_main);
-                holder.textView = (TextView) findViewById(R.id.textview_grid_main);
-                convertView.setTag(holder);
-            }else {
-                holder = (Holder) convertView.getTag();
-            }
-
-            holder.textView.setText("Test");
-
-            Bitmap bm = decodeSampledBitmapFromUri(itemlist.get(position), 220, 220);
-
-            //holder.imageView.setImageBitmap(bm);
-
-            return convertView;
-
-            /*
-            Holder holder;
-            if (convertView == null) {  // if it's not recycled, initialize some attributes
-                //imageView = (ImageView) findViewById(R.id.imageview_grid_main);
-                convertView = LayoutInflater.from(getApplicationContext()).inflate(R.layout.grid_item_main,null);
-                holder = new Holder();
-                ImageView imageView = holder.imageView;
-                imageView = new ImageView(mContext);
-                imageView.setLayoutParams(new GridView.LayoutParams(220, 220));
-                imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
-                imageView.setPadding(8, 10, 8, 10);
-
-                TextView textView = holder.textView;
-                textView = new TextView(mContext);
-                textView.setText("Test");
-
-
-                convertView.setTag(holder);
-            } else {
-                //imageView = (ImageView) convertView;
-                holder = (Holder) convertView.getTag();
-            }
-
-            Bitmap bm = decodeSampledBitmapFromUri(itemlist.get(position), 220, 220);
-
-            holder.imageView.setImageBitmap(bm);
-            return convertView;
-            //
-        }
-
-        private Bitmap decodeSampledBitmapFromUri(String path, int reqWidth, int reqHeight){
-            Bitmap bm = null;
-            // First decode with inJustDecodeBounds=true to check dimensions
-            final BitmapFactory.Options options = new BitmapFactory.Options();
-            options.inJustDecodeBounds = true;
-            BitmapFactory.decodeFile(path, options);
-
-            // Calculate inSampleSize
-            options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight);
-
-            // Decode bitmap with inSampleSize set
-            options.inJustDecodeBounds = false;
-            bm = BitmapFactory.decodeFile(path, options);
-
-            return bm;
-        }
-
-        public int calculateInSampleSize(BitmapFactory.Options options, int reqWidth, int reqHeight) {
-            // Raw height and width of image
-            final int height = options.outHeight;
-            final int width = options.outWidth;
-            int inSampleSize = 1;
-
-            if (height > reqHeight || width > reqWidth) {
-                if (width > height) {
-                    inSampleSize = Math.round((float)height / (float)reqHeight);
-                } else {
-                    inSampleSize = Math.round((float)width / (float)reqWidth);
-                }
-            }
-
-            return inSampleSize;
-        }
-
-        class Holder{
-            ImageView imageView;
-            TextView textView;
-        }
-    }
     */
-
 }

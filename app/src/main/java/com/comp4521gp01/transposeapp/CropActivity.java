@@ -1,15 +1,16 @@
+//# COMP 4521    #  CHEUNG, Wai Man Raymond   20199778   wmcheungaa@connect.ust.hk
+//# COMP 4521    #  LAW, Chiu Kwan  20212087   cklawad@connect.ust.hk
+//# COMP 4521    #  WONG, Ho Yin Calvin  20196726  hycwong@connect.ust.hk
 package com.comp4521gp01.transposeapp;
 
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Rect;
 import android.os.Bundle;
 import android.util.Base64;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ImageView;
 
 import com.theartofdev.edmodo.cropper.CropImageView;
 
@@ -22,7 +23,6 @@ import java.io.ByteArrayOutputStream;
 public class CropActivity extends Activity {
     public static final String EXTRA_MESSAGE = "crop.MESSAGE";
     private Button rotate_crop, confirm_crop;
-    private String bittext;
     private CropImageView cropImageView;
     private Bitmap bitmap = null;
 
@@ -30,17 +30,6 @@ public class CropActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_crop);
         Intent intent = getIntent();
-        /*
-        bittext = intent.getStringExtra(MainActivity.EXTRA_MESSAGE);
-
-        //String to Bitmap
-        try {
-            byte [] encodeByte= Base64.decode(bittext,Base64.DEFAULT);
-            bitmap= BitmapFactory.decodeByteArray(encodeByte, 0, encodeByte.length);
-        } catch(Exception e) {
-            e.getMessage();
-        }
-        */
 
         Bundle extras = getIntent().getExtras();
         byte[] byteArray = extras.getByteArray("picture");

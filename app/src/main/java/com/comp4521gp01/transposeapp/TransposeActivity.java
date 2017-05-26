@@ -1,41 +1,26 @@
+//# COMP 4521    #  CHEUNG, Wai Man Raymond   20199778   wmcheungaa@connect.ust.hk
+//# COMP 4521    #  LAW, Chiu Kwan  20212087   cklawad@connect.ust.hk
+//# COMP 4521    #  WONG, Ho Yin Calvin  20196726  hycwong@connect.ust.hk
 package com.comp4521gp01.transposeapp;
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.Handler;
-import android.provider.ContactsContract;
-import android.support.design.internal.BottomNavigationItemView;
-import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
-import android.util.TypedValue;
-import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.googlecode.tesseract.android.TessBaseAPI;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -48,7 +33,6 @@ import static android.content.ContentValues.TAG;
 
 public class TransposeActivity extends Activity {
     private TextView textView;
-    private ImageView imageView;
     private Button transpose_up, transpose_down, confirm_trans;
     private String chordText;
     private List<String> sharpList, flatList;
@@ -64,9 +48,7 @@ public class TransposeActivity extends Activity {
         transpose_up = (Button) findViewById(R.id.transpose_up);
         transpose_down = (Button) findViewById(R.id.transpose_down);
         confirm_trans = (Button) findViewById(R.id.confirm_trans);
-        imageView = (ImageView) findViewById(R.id.imageView_trans);
         textView = (TextView) findViewById(R.id.textView_trans);
-        //textView.setText(chordText);
 
         final int[] j = new int[1];
 
@@ -77,7 +59,6 @@ public class TransposeActivity extends Activity {
 
                 j[0] = textView.getLineCount();
                 if(j[0] > 29){
-                    //float textSize = (20 * j[0])/29 ;
                     textView.setTextSize(17);
                 }
 
@@ -145,7 +126,6 @@ public class TransposeActivity extends Activity {
                 textView.setText(chordText);
             }
         }
-        //textView.append("\n\n\n Key Flag: " + key_flag +"\n");
     }
 
     private View.OnClickListener clickListener= new View.OnClickListener() {
@@ -211,49 +191,6 @@ public class TransposeActivity extends Activity {
                     }
                 })
                 .show();
-/*
-        final AlertDialog builder = new AlertDialog.Builder(TransposeActivity.this)
-                .setTitle("Save Document")
-                .setView(R.layout.dialog_transpose)
-                .setNegativeButton("Cancel", new DialogInterface.OnClickListener(){
-                    public void onClick(DialogInterface dialog, int which){
-                        dialog.cancel();
-                    }
-                })
-                .setPositiveButton("Save", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        EditText editText_trans = (EditText) findViewById(R.id.editText_trans);
-                        Bitmap bitmap;
-                        bitmap = Bitmap.createBitmap(textView.getWidth(), textView.getHeight(), Bitmap.Config.ARGB_8888);
-
-
-                        Canvas c = new Canvas(bitmap);
-                        textView.draw(c);
-
-                        try {
-                            String path = Environment.getExternalStorageDirectory().getPath()+"/TransposeApp/imgs";
-                            File dir = new File(path);
-                            if(!dir.exists())
-                                dir.mkdirs();
-                            File file = new File(dir, editText_trans.getText().toString() + "1.jpg");
-                            FileOutputStream fOut = new FileOutputStream(file);
-                            bitmap.compress(Bitmap.CompressFormat.JPEG, 70, fOut);
-                            fOut.flush();
-                            fOut.close();
-
-                            Toast.makeText(textView.getContext(), "Saved", Toast.LENGTH_LONG).show();
-                        } catch (Exception e) {
-                            Log.e(TAG, e.getMessage());
-                        }finally {
-                            if(bitmap!=null) {
-                                bitmap.recycle();
-                            }
-                        }
-                    }
-                })
-                .show();
-*/
     }
 
     private void transposeUp() {
@@ -266,7 +203,6 @@ public class TransposeActivity extends Activity {
                         if(sharpList.get(j).equals(getNote(i))){
                             chordspace.add(i);
                             chordspace.add(j);
-                            //textView.append("\n" + getNote(i)+" ");
                         }
                     }
                 }else if(key_flag == 2){
@@ -274,7 +210,6 @@ public class TransposeActivity extends Activity {
                         if(flatList.get(j).equals(getNote(i))){
                             chordspace.add(i);
                             chordspace.add(j);
-                            //textView.append("\n" + getNote(i)+" ");
                         }
                     }
                 }
@@ -328,19 +263,15 @@ public class TransposeActivity extends Activity {
                 if(key_flag == 1){
                     for(int j = 0; j < sharpList.size(); j++){
                         if(sharpList.get(j).equals(getNote(i))){
-                        //if(sharpList.get(j) == getNote(i)){
                             chordspace.add(i);
                             chordspace.add(j);
-                            //textView.append("\n" + getNote(i)+" ");
                         }
                     }
                 }else if(key_flag == 2){
                     for(int j = 0; j < flatList.size(); j++){
                         if(flatList.get(j).equals(getNote(i))){
-                        //if(flatList.get(j) == getNote(i)){
                             chordspace.add(i);
                             chordspace.add(j);
-                            //textView.append("\n" + getNote(i) +" ");
                         }
                     }
                 }
@@ -467,8 +398,6 @@ public class TransposeActivity extends Activity {
                     return i + 1;
                 }else if(chordText.charAt(i+1) == ' '){
                         return i;
-                //}else if(isChord(i+1) == -99){
-                //    return i;
                 }else{
                     return -99;
                 }
